@@ -1,0 +1,101 @@
+10/16/2025
+ x Still needing to add input validation to user inputs (strike sets basically, workout customization is already done).
+ x Protect SQL commands (input validation)
+ x Add functionality to create workouts with only favorited combos (required for capstone)
+ x Add the ability to create and display reports to users. (required for capstone)
+ x Probably also need to add a scrollwheel to dropdown menus.
+
+10/19/2025
+ x Add a button in favorites menu to start a workout with favorites.
+ x Fix lingering issues with saving favorites.
+ x Add a search feature to favorites/strike sets (required for capstone)
+ x Start fleshing out unit tests.
+
+ 10/20/25
+ x Needing to fix strike name spacing in reports
+
+10/22/25 
+ x Needing to add generic reports to database, and start on "reports over time" report.
+
+10/25/25
+x Needing to add delete functionality to generated reports
+
+10/27/25
+x Needing to create horizontal scaling for high number of reports for line graph in reports over time. (might put dates on every individual strike in the stats)
+x Needing to create better randomization for colors
+
+10/29/2025
+- fix first strike jittering on workouts
+x Edit functions to include states in params for better testability
+x Make it to where devices don't sleep while working out.
+x Delete previous states of navigation. (Users shouldn't be able to go back to a workout they canceled)
+x Complete unit testing implementation
+x clean up code
+
+11/3/2025
+x set up docker
+
+11/18/2025
+x fix search bug
+
+11/24/2025
+x Complete DefaultInfo portion of test plan
+x Create maintenance guide
+x Create User guide
+x Create panopto video
+
+11/26/2025
+x Fix logo image for installed app
+x Add a medical disclaimer when opening the app
+x Default removal of android control bar
+x Add timer to pauses between strikes and combos for UI purposes.
+x Add component for post-workout info where all comobs created for the workout are displayed one more time for users.
+Add karate strikes
+ x snap kick
+ x heel kick
+ x ridge hand
+ x palm strike
+
+ 12/5/2025  (PROD RELEASE)
+- Add 'how to' for anyone opening app for the first time.
+   x add additional button in customize menu "help"
+   - allow users to choose whether or not to move on to next tutorial after finishing one. (at the end of the quick start tutorial, ask if user wants to go over favorites, etc.)
+- Insert remaining strike set graphics
+x Fix navigation
+x add the ability to create favorites from scratch
+x add advanced settings to workout customization page
+  x add the ability to pick and choose which favorites are included in fav workout.
+  x add the ability to exclude strikes from strike set for workout
+  x add the ability to adjust the time delay between combo repititions and different combos
+x add marker on workout summary to notify user where workout was ended if ended early
+x (used a dif solution) add the ability to drag and drop boxes in strike set and favorite customization
+x change boxes to text inputs for simplification over changing box text in arbitrary text box
+x create a script that runs unit tests then produces .aab file following their successful completion
+x touch up statistics and strike sets customization components
+x Fix tutorial prompts popping up during navigation (need to set visibility like: {condition && <.../>})
+
+12/22/2025
+x UI overhaul
+x Figure out animation in general
+x Ring animations when starting a workout
+x Majorly update strike set menu, just create a dropdown from menu button on home screen
+  (create utility file for that type of dropdown)
+    x add create strike set from bottom drop down menu, have template in create strike set menu
+x Do basically the same for favorites.
+- Change from current workout execution system. Use animation instead (The time has come)
+x Do the drag and drop blocks
+-? Fix blocks assigning text to it's own text box
+x Let people lock their own strike sets and unlock the default strike sets
+- Sync up colors of strikes in both graph
+x Add loading bar for workout summary screen
+x Finish making tutorials
+x Add 'Workout Types' option when getting started in main menu
+  x Add the ability to create a workout just from a timer (like a boxing timer) without generating combos
+    x Do the same for favorites, but the user sets an amount of time to 'work' each individual favorite combo with the same break
+- Explain docker
+- make panopto video
+- release to prod
+- fix scrolling bug where scrolling stops after a bit.
+- make a bunch of cosmetics unlocked through challenges.
+x fix bug preventing challenges from appearing as completed until after reset.
+

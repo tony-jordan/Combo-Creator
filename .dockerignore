@@ -1,0 +1,22 @@
+# Ignore node modules (Docker will install its own)
+node_modules
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Ignore build folders
+android/build
+ios/build
+*.iml
+
+# Git & config files
+.git
+.gitignore
+
+# IDE/editor stuff
+.vscode
+.idea
+
+# Mac/Windows hidden files
+.DS_Store
+Thumbs.db
