@@ -353,14 +353,16 @@ const stopStrikeAnimation = () => {
         }
       }
       // check to see if challenge is completed before changing
-      const [dayCheck] = await db.executeSql('SELECT achieved FROM challenges WHERE name = (?)', [JSON.stringify(['Your Single Step','A Double','A Turkey','A Quad','The Big V','Wind down a bit huh?','You should probably get some rest'])]);
-      if (dayCheck.rows.item(0).achieved == 0) {
+      const [checks] = await db.executeSql('SELECT achieved, value FROM challenges WHERE name = (?)', [JSON.stringify(['Your Single Step','A Double','A Turkey','A Quad','The Big V','Wind down a bit huh?','You should probably get some rest'])]);
+      if (checks.rows.item(0).achieved == 0) {
         let streakValue = 7 - emptyDays;
         if (streakValue == 7) {
-          await db.executeSql(`UPDATE challenges SET value = (?), tier = (?), achieved = (?) WHERE name = (?)`, [7 - emptyDays, 7 - emptyDays, 1, JSON.stringify(['Your Single Step','A Double','A Turkey','A Quad','The Big V','Wind down a bit huh?','You should probably get some rest'])]);
+          await db.executeSql(`UPDATE challenges SET value = (?), tier = (?), achieved = (?) WHERE name = (?)`, [streakValue, streakValue, 1, JSON.stringify(['Your Single Step','A Double','A Turkey','A Quad','The Big V','Wind down a bit huh?','You should probably get some rest'])]);
         }
         else {
-          await db.executeSql(`UPDATE challenges SET value = (?), tier = (?) WHERE name = (?)`, [7 - emptyDays, 7 - emptyDays, JSON.stringify(['Your Single Step','A Double','A Turkey','A Quad','The Big V','Wind down a bit huh?','You should probably get some rest'])]);
+          if (checks.rows.item(0).value < streakValue) {
+            await db.executeSql(`UPDATE challenges SET value = (?), tier = (?) WHERE name = (?)`, [streakValue, streakValue, JSON.stringify(['Your Single Step','A Double','A Turkey','A Quad','The Big V','Wind down a bit huh?','You should probably get some rest'])]);
+          }
         }
         await updateChallenge(db, JSON.stringify(['Your Single Step','A Double','A Turkey','A Quad','The Big V','Wind down a bit huh?','You should probably get some rest']), 0)
       }
