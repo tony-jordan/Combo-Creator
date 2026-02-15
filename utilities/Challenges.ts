@@ -4,6 +4,45 @@
 
 import type { SQLiteDatabase } from 'react-native-sqlite-storage';
 
+export type metrics = {name: string, value: number, tier?: number};
+
+export const guidedWorkoutChallenges = [
+  JSON.stringify(['Jabbing Apprentice', 'Intermediate Jabber', 'Master Jabber', 'God-Tier Jabber']),
+  JSON.stringify(['Cross Trainee','Cross Examiner','Crossing Menace','THE Crosser']),
+  JSON.stringify(['Newbie Hooker', 'Certified Hooker', 'Captain Hooks','Hooked on Destruction']),
+  JSON.stringify(['Uppercut Rookie','Chin Checker','Send Them to Orbit','Peek-a-boo-er']),
+  JSON.stringify(['Overhand Intern','Overhand Enthusiast','Meteor Fist Overhand',"You're gonna kill someone kid"]),
+  JSON.stringify(['Amateur Ridger','Ridge Curious','Sideways Violence','Chop Supreme']),
+  JSON.stringify(['Sidekick','Anti-hero','Bona-fide Superhero','Super-DUPER man']),
+  'Banshee Crusher',
+  JSON.stringify(['Open-Handed Apprentice','Respectful Violence','High-Five of Doom','Palm of Judgment']),
+  JSON.stringify(['Basic Snapper','Whiplash Enthusiast','Blink-and-You-Missed-It','Oof ouch my chin']),
+  JSON.stringify(['Heel Turn','Backstabber','Eyes-in-the-Back-Kicker','No Look. All Damage.']),
+  JSON.stringify(['Sleeper Teeper','Season for Teepin','Personal Space Enjoyer','Teepzilla']),
+  JSON.stringify(['Elbow Rookie','Close-Range Negotiator','Sharp Conversations','Built Different (and Dangerous)']),
+  'Tatsumaki',
+  'Nut Buster',
+  JSON.stringify(['Two-Piece Starter',"Can't guard em both",'A PAIR of knuckle sandwiches','Kung Fu Panda']),
+  'Legs of Steel',
+  'Ultra Instinct',
+]
+
+// function for getting all values of given challenges for end of workout summary animations and such
+export const getChallengeValues = async (db: SQLiteDatabase, names: string[]) => {
+  let query = `SELECT name, value, tier FROM Challenges WHERE name = (?)`
+  for (let x = 0; x < names.length; x++) {
+    if (x > 0) {
+      query += " OR name = (?)"
+    }
+  }
+  const [result] = await db.executeSql(query, names)
+  const values : metrics[] = []
+  for (let x = 0; x < result.rows.length; x++) {
+    values.push({name: result.rows.item(x).name, value: result.rows.item(x).value, tier: result.rows.item(x).tier});
+  }
+  return values;
+}
+
 // function for getting highest strike count for challenge updating
 export const setHighestStrikeCount = async (db: SQLiteDatabase) => {
   const [result] = await db.executeSql(`SELECT * FROM challenges WHERE tier IS NOT NULL`);

@@ -10,7 +10,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import BuildWorkout from '../utilities/BuildWorkout';
 import { getDBConnection, addRecentWorkout } from '../utilities/DefaultInfo';
 import LinearGradient from 'react-native-linear-gradient';
-import { updateChallenge, setHighestStrikeCount } from '../utilities/Challenges';
+import { updateChallenge, setHighestStrikeCount, getChallengeValues, guidedWorkoutChallenges, metrics } from '../utilities/Challenges';
 
 var combos: string[][];
 var favIndex: number[];
@@ -41,7 +41,19 @@ const WorkoutExecution = () => {
   const [timeMinutes, setTimeMinutes] = useState("000")
   const [workoutActive, setWorkoutActive] = useState<boolean>(true);
 
+  const [startMetrics, setStartMetrics] = useState<metrics[]>([{name:"", value: 1}]);
+ 
+
   const glowAnim = useRef(new Animated.Value(0)).current;  
+
+ // use effect for getting challenge values at the start of the workout
+  useEffect(() => {
+    const fetchData = async () => {
+      const db = await getDBConnection();
+      setStartMetrics(await getChallengeValues(db, guidedWorkoutChallenges))
+    }
+    fetchData();
+  }, [])
 
   // use effect for ending workout and navigating to summary page
   useEffect(() => {
@@ -57,7 +69,7 @@ const WorkoutExecution = () => {
       }
       fetchData();
       // if strike set id = -999 workout is by favorite rather than strike set
-      nav.replace('WorkoutSummary', { time: timeMinutes + ":" + timeSeconds, combos: combos, favorited: favIndex, bf: route.params.strikeSetId == "-999" ? true : false, count: count});
+      nav.replace('WorkoutSummary', { time: timeMinutes + ":" + timeSeconds, combos: combos, favorited: favIndex, bf: route.params.strikeSetId == "-999" ? true : false, count: count, startMetrics: startMetrics});
     }
   }, [workoutActive])
 

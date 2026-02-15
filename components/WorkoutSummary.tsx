@@ -3,7 +3,7 @@
 // Purpose: Give users summary of workout, and display all combos for user to like if they were not able to
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ViewBase , Image} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import { RootStackParamList } from '../utilities/StackNavigation';
 import { useRoute, RouteProp } from '@react-navigation/native';
@@ -12,7 +12,7 @@ import { sortCounts } from '../utilities/SortData';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';;
 import { scheduleOnRN } from 'react-native-worklets';
-import { updateChallenge } from '../utilities/Challenges';
+import { getChallengeValues, guidedWorkoutChallenges, medalImages, metrics, updateChallenge } from '../utilities/Challenges';
 
 export type info = {name: string, count: number};
 
@@ -65,6 +65,15 @@ const WorkoutSummary = () => {
         })
       });
     }
+
+  const [challengeValues, setChallengeValues] = useState<metrics[]>([])
+  useEffect(() => {
+    const grabChallengeInfo = async () => {
+      const db = await getDBConnection();
+      setChallengeValues(await getChallengeValues(db, guidedWorkoutChallenges))
+    }
+    grabChallengeInfo();
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,8 +146,31 @@ const WorkoutSummary = () => {
   });
   const [btnText, setBtnText] = useState(btnTextInit);
 
+  let startMetrics = route.params.startMetrics;
+  console.log(startMetrics);
+  console.log(challengeValues);
+
     return (
         <LinearGradient colors={['black', '#04007D']} style={styles.screen}>
+          {startMetrics != challengeValues &&
+            <LinearGradient colors={['gray', 'black']} style={{width: '95%', height: '95%', alignSelf: 'center', position: 'absolute', zIndex: 999, flexDirection: 'row', flexWrap: 'wrap',
+              justifyContent: 'center'
+            }}>
+              {challengeValues.map((item, index) => (
+                <View key={index} style={{width: startMetrics.find(val => val.name == item.name) && startMetrics[startMetrics.findIndex(val => val.name == item.name)].value != item.value ? '30%' : 0}}>
+                {startMetrics.find(val => val.name == item.name) && startMetrics[startMetrics.findIndex(val => val.name == item.name)].value != item.value && 
+                  <View style={{alignItems: 'center', borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '100%'}}>
+                    <Image style={{height: 100, width: 100, resizeMode: 'contain'}} source={item.tier ? medalImages[medalImages.findIndex(m => m.name == JSON.parse(item.name)[0])].items[item.tier] || require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == item.name)].items[0] || require('../assets/locked.png')}/>
+                    <Text style={[styles.itemText, {textAlign: 'center'}]}>{item.tier ? JSON.parse(item.name)[item.tier] : item.name}</Text>
+                    <View style={{width: '75%', backgroundColor: 'white', height: 20, borderWidth: 1, borderColor: 'black'}}>
+                      <View style={{width: '50%', backgroundColor: 'red', height: '100%', position: 'absolute'}}/>
+                    </View>
+                  </View>
+                }
+                </View>
+              ))}
+            </LinearGradient>
+          }
           <LinearGradient colors={['#04007D', 'red']} style={styles.head}>
             <View style={{alignItems: 'center', justifyContent: 'center'}}>
               <Text style={[styles.headText, {textAlign: 'center', paddingStart: '1%', paddingEnd: '1%', color: 'white'}]}>Combo Creator</Text>

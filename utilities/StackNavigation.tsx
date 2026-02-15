@@ -17,6 +17,7 @@ import TimedWorkoutCustomization from '../components/TimedWorkoutCustomization';
 import TimedWorkoutExecution from '../components/TimedWorkoutExecution';
 import Challenges from '../components/Challenges';
 import Tutorial from '../components/Tutorial';
+import { metrics } from './Challenges';
 
 // type for root navigation stack
 export type RootStackParamList = {
@@ -27,7 +28,7 @@ export type RootStackParamList = {
   FavoritesOverview: {favorite: any};
   StrikeSetsCustomization: {set: any};
   StatusReport: undefined;
-  WorkoutSummary: {time: string, combos: string[][], favorited: number[], bf: boolean, count: number}
+  WorkoutSummary: {time: string, combos: string[][], favorited: number[], bf: boolean, count: number, startMetrics: metrics[] }
   InWorkout: {strikeSetId: string, comboCount: number, throwCount: number, strikesPerCombo: number, timePerStrike: number, pbc?: number, pwrc?: number, strikes?: any}
   TimedWorkoutCustomization: undefined;
   TimedWorkoutExecution: {rounds: number, workTime: string, restTime: string,favorites?: any[]};

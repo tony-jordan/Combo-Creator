@@ -104,7 +104,6 @@ export function BuildWorkout(props: {
 
     updateChallenge(db, 'I fear not the man who has practiced 1000 strikes', temp.length)
 
-
     let checks = {
       jab : 0,
       cross : 0,
@@ -247,8 +246,7 @@ export function BuildWorkout(props: {
         updateChallenge(db, JSON.stringify(['Amateur Ridger','Ridge Curious','Sideways Violence','Chop Supreme']), checks.ridgehand);
     }
     if (checks.superman > 0) {
-        updateChallenge(db, JSON.stringify(['Sidekick','Anti-hero','Bona-fide Superhero','Super-DUPER man'
-  ]), checks.superman);
+        updateChallenge(db, JSON.stringify(['Sidekick','Anti-hero','Bona-fide Superhero','Super-DUPER man']), checks.superman);
         updateChallenge(db, 'Banshee Crusher', checks.superman);
     }
     if (checks.palmstrike > 0) {
@@ -261,10 +259,10 @@ export function BuildWorkout(props: {
       updateChallenge(db, JSON.stringify(['Heel Turn','Backstabber','Eyes-in-the-Back-Kicker','No Look. All Damage.']), checks.heelkick);
     }
     if (checks.teep > 0) {
-      updateChallenge(db,JSON.stringify(['Sleeper Teeper','Season for Teepin','Personal Space Enjoyer','Teepzilla']),checks.teep);
+      updateChallenge(db, JSON.stringify(['Sleeper Teeper','Season for Teepin','Personal Space Enjoyer','Teepzilla']),checks.teep);
     }
     if (checks.elbow > 0) {
-      updateChallenge(db,JSON.stringify(['Elbow Rookie','Close-Range Negotiator','Sharp Conversations','Built Different (and Dangerous)']),checks.elbow);
+      updateChallenge(db, JSON.stringify(['Elbow Rookie','Close-Range Negotiator','Sharp Conversations','Built Different (and Dangerous)']),checks.elbow);
     }
     if (checks.spinning > 0) {
       updateChallenge(db, 'Tatsumaki', checks.spinning);
@@ -347,6 +345,8 @@ export function BuildWorkout(props: {
         const fetchData = async () => {
             // if this is configured to be favorite workout data pull is unnecessary
             const db = await getDBConnection();
+            // grab values of all challenge data for workout summary stat animation
+
             if (strikeSetId != "-999") {
                 const set = await getStrikeSetByID(db, workout.getStrikeSetId());
                 workout.strikes = JSON.parse(set.strikes);
