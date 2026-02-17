@@ -2,21 +2,25 @@
 // Author: Tony Jordan
 // Purpose: Give users summary of workout, and display all combos for user to like if they were not able to
 
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ViewBase , Image} from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TouchableWithoutFeedback, Dimensions} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import { RootStackParamList } from '../utilities/StackNavigation';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { addToFavorites, getDBConnection, createReport, getFavoriteCombos } from '../utilities/DefaultInfo';
 import { sortCounts } from '../utilities/SortData';
 import LinearGradient from 'react-native-linear-gradient';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';;
-import { scheduleOnRN } from 'react-native-worklets';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';;
+import { runOnJS, scheduleOnRN } from 'react-native-worklets';
 import { getChallengeValues, guidedWorkoutChallenges, medalImages, metrics, updateChallenge } from '../utilities/Challenges';
 
 export type info = {name: string, count: number};
 
 const WorkoutSummary = () => {
+
+  const SCREEN_WIDTH = Dimensions.get('screen').width;
+  const SCREEN_HEIGHT = Dimensions.get('screen').height;
+  const BAR_WIDTH = SCREEN_WIDTH * .25
 
   const [strikeNumbers, setStrikeNumbers] = useState<info[]>([]);
   const [allStrikes, setAllStrikes] = useState<string[][]>([]);
@@ -29,6 +33,9 @@ const WorkoutSummary = () => {
   const [fav, setFav] = useState(route.params.favorited);
   const data = route.params.combos;
   const bf = route.params.bf;
+
+  const [progressMenu, setProgressMenu] = useState<boolean>(true)
+  const [singeAnimation, setSingeAnimation] = useState<boolean>(true);
 
   const [updated, setUpdated] = useState<boolean>(false);
 
@@ -67,13 +74,65 @@ const WorkoutSummary = () => {
     }
 
   const [challengeValues, setChallengeValues] = useState<metrics[]>([])
+  //const [progressAnimations, setProgressAnimations] = useState<any>([]);
   useEffect(() => {
     const grabChallengeInfo = async () => {
       const db = await getDBConnection();
       setChallengeValues(await getChallengeValues(db, guidedWorkoutChallenges))
     }
     grabChallengeInfo();
+
   }, [])
+
+  const progressAnimations = route.params.startMetrics.map((item, index) => {
+      const bwidth = useSharedValue((BAR_WIDTH * (item.value / item.threshold)));
+      const animation = useAnimatedStyle(() => {
+          return {
+              // moves to be made
+              width: bwidth.value
+          }
+      })
+      return {name: item.name, width: bwidth, animation: animation}
+  })
+
+  useEffect(() => {
+    if (progressAnimations.length == challengeValues.length) {
+      setSingeAnimation(true);
+      for (let x = 0; x < progressAnimations.length; x++) {
+        updateAnimation(x);
+      }
+    }
+  }, [challengeValues])
+
+  function startImageAnimation() {
+  let index = 0;
+  return setInterval(() => {
+    setProgressImage(progressImgs[index]);
+    index = Math.floor(Math.random() * ((progressImgs.length - 1) - 1))
+    if (index >= progressImgs.length) index = 0;
+  }, 50);
+}
+
+const onSingeEnd = React.useCallback(() => {
+    setSingeAnimation(false);
+  }, []);
+
+
+  function updateAnimation(index: number) {
+    let multiplier = challengeValues[index].value / challengeValues[index].threshold
+    if (challengeValues[index].value / challengeValues[index].threshold >= 1)
+      multiplier = 1;
+    const p_animation = startImageAnimation();
+    'worklet';
+    // start all progress animations
+    progressAnimations[index].width.value = withTiming((SCREEN_WIDTH * .25) * multiplier, { duration: 3000, easing: Easing.inOut(Easing.ease) }, (finished) => {
+      if (finished) {
+        clearInterval(p_animation);
+        scheduleOnRN(onSingeEnd)
+      }
+    });
+  }
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -147,28 +206,51 @@ const WorkoutSummary = () => {
   const [btnText, setBtnText] = useState(btnTextInit);
 
   let startMetrics = route.params.startMetrics;
-  console.log(startMetrics);
-  console.log(challengeValues);
+
+  const progressImgs = [
+    require('../assets/Animations/progress/progress-1.png'),
+    require('../assets/Animations/progress/progress-2.png'),
+    require('../assets/Animations/progress/progress-3.png'),
+    require('../assets/Animations/progress/progress-4.png')
+  ]
+  const [progressImage, setProgressImage] = useState(progressImgs[0])
 
     return (
-        <LinearGradient colors={['black', '#04007D']} style={styles.screen}>
-          {startMetrics != challengeValues &&
-            <LinearGradient colors={['gray', 'black']} style={{width: '95%', height: '95%', alignSelf: 'center', position: 'absolute', zIndex: 999, flexDirection: 'row', flexWrap: 'wrap',
-              justifyContent: 'center'
+        <LinearGradient colors={['black', '#04007D']} style={styles.screen} >
+          {startMetrics != challengeValues && progressMenu &&
+            <LinearGradient colors={['black', '#04007D']} style={{width: '95%', height: '100%', alignSelf: 'center', position: 'absolute', zIndex: 999,
+              justifyContent: 'center', flexWrap: 'wrap'
             }}>
-              {challengeValues.map((item, index) => (
-                <View key={index} style={{width: startMetrics.find(val => val.name == item.name) && startMetrics[startMetrics.findIndex(val => val.name == item.name)].value != item.value ? '30%' : 0}}>
-                {startMetrics.find(val => val.name == item.name) && startMetrics[startMetrics.findIndex(val => val.name == item.name)].value != item.value && 
-                  <View style={{alignItems: 'center', borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '100%'}}>
-                    <Image style={{height: 100, width: 100, resizeMode: 'contain'}} source={item.tier ? medalImages[medalImages.findIndex(m => m.name == JSON.parse(item.name)[0])].items[item.tier] || require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == item.name)].items[0] || require('../assets/locked.png')}/>
-                    <Text style={[styles.itemText, {textAlign: 'center'}]}>{item.tier ? JSON.parse(item.name)[item.tier] : item.name}</Text>
-                    <View style={{width: '75%', backgroundColor: 'white', height: 20, borderWidth: 1, borderColor: 'black'}}>
-                      <View style={{width: '50%', backgroundColor: 'red', height: '100%', position: 'absolute'}}/>
-                    </View>
-                  </View>
-                }
+              <ScrollView contentContainerStyle={{alignItems: 'center'}}>
+                <Text style={[styles.headText, {fontSize: 18, padding: 1}]}>Challenge Progress</Text>
+                <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center'}}>
+                  {challengeValues.map((item, index) => (
+                    <View key={index} style={{width: startMetrics.find(val => val.name == item.name) && startMetrics[startMetrics.findIndex(val => val.name == item.name)].value != item.value ? '25%' : 0}}>
+                      {startMetrics.find(val => val.name == item.name) && startMetrics[startMetrics.findIndex(val => val.name == item.name)].value != item.value && 
+                        <View style={{alignItems: 'center', borderColor: 'white', borderWidth: 3, borderRadius: 10, width: '100%', justifyContent: 'space-evenly', height: SCREEN_HEIGHT / 3}}>
+                          <Image style={{height: SCREEN_HEIGHT * .07, width: SCREEN_HEIGHT * .1, resizeMode: 'contain'}} source={item.tier != undefined ? item.tier == 0 ? require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == JSON.parse(item.name)[0])].items[item.tier] || require('../assets/locked.png') : item.threshold > item.value ? require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == item.name)].items[0] || require('../assets/locked.png')}/>
+                          <Text style={[styles.itemText, {textAlign: 'center', height: '30%'}]}>{item.tier != undefined ? item.tier == 0 ? '???' : JSON.parse(item.name)[item.tier] : item.value < item.threshold ? '???' : item.name}</Text>
+                          <Text style={[styles.headText, {fontSize: 18, padding: 1}]}>+{item.value - startMetrics[startMetrics.findIndex(val => val.name == item.name)].value}</Text>
+                          <View style={{width: SCREEN_WIDTH * .2, backgroundColor: 'white', height: SCREEN_HEIGHT * .01, borderWidth: 1, borderColor: 'black'}}>
+                            <Animated.View style={[progressAnimations[index].animation, {backgroundColor: 'red', height: '100%', position: 'absolute', alignItems: 'flex-end'}]}>
+                              <Image source={progressImage} style={{height: '100%', width: BAR_WIDTH * .02, resizeMode: 'stretch', opacity: singeAnimation ? 1 : 0}}/>
+                            </Animated.View>
+                          </View>
+                        </View>
+                      }
+                     </View>
+                  ))}
                 </View>
-              ))}
+              </ScrollView>
+              <View style={{width: SCREEN_WIDTH * .9, alignItems: 'center', alignSelf: 'center'}}>
+                 <TouchableOpacity style={{width: '100%'}} onPress={() => {
+                  setProgressMenu(false);
+                 }}>
+                  <LinearGradient colors={['red', '#390842']} style={[styles.controlButton, {backgroundColor: "red"}]}>
+                    <Text style={{color: "white", fontSize: 30, fontWeight: "bold", padding: '1%'}}>Exit</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
             </LinearGradient>
           }
           <LinearGradient colors={['#04007D', 'red']} style={styles.head}>

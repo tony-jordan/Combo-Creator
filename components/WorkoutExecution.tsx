@@ -41,7 +41,7 @@ const WorkoutExecution = () => {
   const [timeMinutes, setTimeMinutes] = useState("000")
   const [workoutActive, setWorkoutActive] = useState<boolean>(true);
 
-  const [startMetrics, setStartMetrics] = useState<metrics[]>([{name:"", value: 1}]);
+  const [startMetrics, setStartMetrics] = useState<metrics[]>([]);
  
 
   const glowAnim = useRef(new Animated.Value(0)).current;  

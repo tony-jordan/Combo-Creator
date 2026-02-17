@@ -4,7 +4,7 @@
 
 import type { SQLiteDatabase } from 'react-native-sqlite-storage';
 
-export type metrics = {name: string, value: number, tier?: number};
+export type metrics = {name: string, value: number, tier: number, threshold: number};
 
 export const guidedWorkoutChallenges = [
   JSON.stringify(['Jabbing Apprentice', 'Intermediate Jabber', 'Master Jabber', 'God-Tier Jabber']),
@@ -25,11 +25,12 @@ export const guidedWorkoutChallenges = [
   JSON.stringify(['Two-Piece Starter',"Can't guard em both",'A PAIR of knuckle sandwiches','Kung Fu Panda']),
   'Legs of Steel',
   'Ultra Instinct',
+  'I fear not the man who has practiced 1000 strikes'
 ]
 
 // function for getting all values of given challenges for end of workout summary animations and such
 export const getChallengeValues = async (db: SQLiteDatabase, names: string[]) => {
-  let query = `SELECT name, value, tier FROM Challenges WHERE name = (?)`
+  let query = `SELECT name, value, tier, thresholds FROM Challenges WHERE name = (?)`
   for (let x = 0; x < names.length; x++) {
     if (x > 0) {
       query += " OR name = (?)"
@@ -38,7 +39,11 @@ export const getChallengeValues = async (db: SQLiteDatabase, names: string[]) =>
   const [result] = await db.executeSql(query, names)
   const values : metrics[] = []
   for (let x = 0; x < result.rows.length; x++) {
-    values.push({name: result.rows.item(x).name, value: result.rows.item(x).value, tier: result.rows.item(x).tier});
+    const thresholds = JSON.parse(result.rows.item(x).thresholds)
+    if (result.rows.item(x).tier)
+      values.push({name: result.rows.item(x).name, value: result.rows.item(x).value, tier: result.rows.item(x).tier, threshold: thresholds[result.rows.item(x).tier]});
+    else
+      values.push({name: result.rows.item(x).name, value: result.rows.item(x).value, tier: result.rows.item(x).tier, threshold: thresholds[0]});
   }
   return values;
 }
