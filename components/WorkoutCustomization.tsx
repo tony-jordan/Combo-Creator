@@ -73,6 +73,8 @@ const WorkoutCustomization = () => {
 
   const [adv, setAdv] = useState<boolean>(false);
 
+  const [selectAllText, setSelectAllText] = useState<String>("De-select All");
+
   const userInputs: inputs = {
     comboCount: comboCount,
     throwCount: throwCount,
@@ -118,6 +120,14 @@ const WorkoutCustomization = () => {
       setStrikesActive(temp);
     }, [strikes])
 
+    useEffect(() => {
+      if (!strikesActive.includes(false)) {
+        setSelectAllText('De-select All');
+      }
+      else
+        setSelectAllText('Select All');
+    }, [strikesActive])
+
     const options = [ require("../assets/opt.png"), require("../assets/opt_selected.png")];
     const audio = [require('../assets/no-audio.png'), require('../assets/audio.png'),]
 
@@ -138,13 +148,16 @@ const WorkoutCustomization = () => {
                 <Text style={[styles.bodyText, {textAlign: 'center', marginBottom: '1%', fontSize: 20}]}>Adjust which strikes appear in your workout</Text>
                 <View style={{flexDirection: 'row', width: '100%', marginTop: '5%', marginBottom: '1%', alignItems: 'center'}}>
                   <TouchableOpacity onPress={() => {
-                    setStrikesActive(new Array(strikes.length).fill(true))
+                    if (strikesActive.includes(false)) 
+                      setStrikesActive(new Array(strikes.length).fill(true))
+                    else
+                      setStrikesActive(new Array(strikes.length).fill(false))
                   }}>
                     <View>
                       <Image style={{height: 35, width: 35, marginStart: '1%', resizeMode: 'contain'}} source={strikesActive.includes(false) ? options[0] : options[1]}/>
                     </View>
                   </TouchableOpacity>
-                  <Text style={{fontWeight: 'bold', padding: '1%', color: 'white'}}>Select all</Text>
+                  <Text style={{fontWeight: 'bold', padding: '1%', color: 'white'}}>{selectAllText}</Text>
                 </View>
                 <ScrollView style={{borderStyle: 'solid', borderColor: 'white', borderWidth: 1}}>
                   {strikes.map((item, index) => (

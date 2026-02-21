@@ -11,7 +11,7 @@ import { getDBConnection, addRecentWorkout } from '../utilities/DefaultInfo';
 import LinearGradient from 'react-native-linear-gradient';
 import { useKeepAwake, deactivateKeepAwake } from '@sayem314/react-native-keep-awake';
 import Sound from 'react-native-sound';
-import { loadSingleBellSound, releaseBellSounds } from '../audiocontrol';
+import { loadBellSounds, releaseBellSounds } from '../audiocontrol';
 import { updateChallenge } from '../utilities/Challenges';
 
 const TimedWorkoutExecution = () => {
@@ -44,34 +44,20 @@ const elapsed = useRef(0);
 const rafId = useRef<number | null>(null);
 const durationMs = useRef(0);
 const inRest = useRef<boolean>(false);
-
-const [bellSound, setBellSound] = useState<Sound>();
+const currentSoundIndex = useRef<number>(0);
+const bellSounds = useRef<Sound[]>([]);
+// total number of bell sounds == rounds * 2 - 1 (last rest round does not take place hence -1)
 
 useEffect(() => {
     const fetchData = async () => {
-      const db = await getDBConnection();
-      const loadedSound = await loadSingleBellSound();
-      setBellSound(loadedSound);
-      loadedSound.play();
+      const sounds = await loadBellSounds((route.params.rounds * 2) - 1)
+      sounds[currentSoundIndex.current].play()
+      currentSoundIndex.current += 1;
+      bellSounds.current = sounds;
       start(workMs);
     }
     fetchData();
 }, [])
-
-const playBell = useCallback(() => {
-  if (!bellSound) return;
-  bellSound.stop();
-  releaseBellSounds([bellSound]);
-  const fetchData = async () => {
-      const db = await getDBConnection();
-      const loadedSound = await loadSingleBellSound();
-      setBellSound(loadedSound);
-      loadedSound.play();
-      start(workMs);
-  }
-  fetchData();
-  
-}, [bellSound]);
 
 useEffect(() => {
     let secondsTotal = timeRemainingMs / 1000
@@ -103,7 +89,10 @@ const loop = () => {
         if (temp != 0) {
             rounds.current = temp;
             inRest.current = true;
-            playBell();
+            if (bellSounds) {
+              bellSounds.current[currentSoundIndex.current].play();
+              currentSoundIndex.current += 1
+            }
             start(restMs);
         }
         else {
@@ -113,7 +102,10 @@ const loop = () => {
     }
     else {
         inRest.current = false;
-        playBell();
+        if (bellSounds) {
+          bellSounds.current[currentSoundIndex.current].play();
+          currentSoundIndex.current += 1
+        }
         start(workMs);
     }
     
@@ -155,6 +147,7 @@ const resume = () => {
   // use effect for ending workout and navigating to summary page
   useEffect(() => {
     if (!workoutActive) {
+      releaseBellSounds(bellSounds);
         // convert all time to miliseconds to get the elapsed time for the workout
       let totalMs = 0;
       // add total number of completed rounds to milisecond total

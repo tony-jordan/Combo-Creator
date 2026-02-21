@@ -25,7 +25,8 @@ export const guidedWorkoutChallenges = [
   JSON.stringify(['Two-Piece Starter',"Can't guard em both",'A PAIR of knuckle sandwiches','Kung Fu Panda']),
   'Legs of Steel',
   'Ultra Instinct',
-  'I fear not the man who has practiced 1000 strikes'
+  'I fear not the man who has practiced 1000 strikes',
+  'I fear the man who has practiced one strike 1000 times'
 ]
 
 // function for getting all values of given challenges for end of workout summary animations and such

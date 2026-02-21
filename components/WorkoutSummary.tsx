@@ -36,6 +36,7 @@ const WorkoutSummary = () => {
 
   const [progressMenu, setProgressMenu] = useState<boolean>(true)
   const [singeAnimation, setSingeAnimation] = useState<boolean>(true);
+  const [progressBarColor, setProgressBarColor] = useState<string>('yellow')
 
   const [updated, setUpdated] = useState<boolean>(false);
 
@@ -81,11 +82,10 @@ const WorkoutSummary = () => {
       setChallengeValues(await getChallengeValues(db, guidedWorkoutChallenges))
     }
     grabChallengeInfo();
-
   }, [])
 
   const progressAnimations = route.params.startMetrics.map((item, index) => {
-      const bwidth = useSharedValue((BAR_WIDTH * (item.value / item.threshold)));
+      const bwidth = useSharedValue(0);
       const animation = useAnimatedStyle(() => {
           return {
               // moves to be made
@@ -105,13 +105,14 @@ const WorkoutSummary = () => {
   }, [challengeValues])
 
   function startImageAnimation() {
-  let index = 0;
-  return setInterval(() => {
-    setProgressImage(progressImgs[index]);
-    index = Math.floor(Math.random() * ((progressImgs.length - 1) - 1))
-    if (index >= progressImgs.length) index = 0;
-  }, 50);
-}
+    let index = 0;
+    return setInterval(() => {
+      setProgressImage(progressImgs[index]);
+      index = Math.floor(Math.random() * ((progressImgs.length - 1) - 1))
+      if (index >= progressImgs.length) index = 0;
+    }, 100);
+  }
+
 
 const onSingeEnd = React.useCallback(() => {
     setSingeAnimation(false);
@@ -119,13 +120,13 @@ const onSingeEnd = React.useCallback(() => {
 
 
   function updateAnimation(index: number) {
-    let multiplier = challengeValues[index].value / challengeValues[index].threshold
-    if (challengeValues[index].value / challengeValues[index].threshold >= 1)
-      multiplier = 1;
+    let multiplier =  (challengeValues[index].value - startMetrics[index].value) / challengeValues[index].threshold
+    if (challengeValues[index].value / challengeValues[index].threshold > 1)
+      multiplier = 0;
     const p_animation = startImageAnimation();
     'worklet';
     // start all progress animations
-    progressAnimations[index].width.value = withTiming((SCREEN_WIDTH * .25) * multiplier, { duration: 3000, easing: Easing.inOut(Easing.ease) }, (finished) => {
+    progressAnimations[index].width.value = withTiming(BAR_WIDTH * multiplier, { duration: 3000, easing: Easing.inOut(Easing.ease) }, (finished) => {
       if (finished) {
         clearInterval(p_animation);
         scheduleOnRN(onSingeEnd)
@@ -228,11 +229,13 @@ const onSingeEnd = React.useCallback(() => {
                     <View key={index} style={{width: startMetrics.find(val => val.name == item.name) && startMetrics[startMetrics.findIndex(val => val.name == item.name)].value != item.value ? '25%' : 0}}>
                       {startMetrics.find(val => val.name == item.name) && startMetrics[startMetrics.findIndex(val => val.name == item.name)].value != item.value && 
                         <View style={{alignItems: 'center', borderColor: 'white', borderWidth: 3, borderRadius: 10, width: '100%', justifyContent: 'space-evenly', height: SCREEN_HEIGHT / 3}}>
-                          <Image style={{height: SCREEN_HEIGHT * .07, width: SCREEN_HEIGHT * .1, resizeMode: 'contain'}} source={item.tier != undefined ? item.tier == 0 ? require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == JSON.parse(item.name)[0])].items[item.tier] || require('../assets/locked.png') : item.threshold > item.value ? require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == item.name)].items[0] || require('../assets/locked.png')}/>
-                          <Text style={[styles.itemText, {textAlign: 'center', height: '30%'}]}>{item.tier != undefined ? item.tier == 0 ? '???' : JSON.parse(item.name)[item.tier] : item.value < item.threshold ? '???' : item.name}</Text>
+                          <Image style={{height: SCREEN_HEIGHT * .07, width: SCREEN_HEIGHT * .1, resizeMode: 'contain'}} source={item.tier != undefined ? item.tier == 0 ? require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == JSON.parse(item.name)[0])].items[item.tier - 1] || require('../assets/locked.png') : item.threshold > item.value ? require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == item.name)].items[0] || require('../assets/locked.png')}/>
+                          <Text style={[styles.itemText, {textAlign: 'center', height: '30%'}]}>{item.tier != undefined ? item.tier == 0 ? '???' : JSON.parse(item.name)[item.tier - 1] : item.value < item.threshold ? '???' : item.name}</Text>
                           <Text style={[styles.headText, {fontSize: 18, padding: 1}]}>+{item.value - startMetrics[startMetrics.findIndex(val => val.name == item.name)].value}</Text>
-                          <View style={{width: SCREEN_WIDTH * .2, backgroundColor: 'white', height: SCREEN_HEIGHT * .01, borderWidth: 1, borderColor: 'black'}}>
-                            <Animated.View style={[progressAnimations[index].animation, {backgroundColor: 'red', height: '100%', position: 'absolute', alignItems: 'flex-end'}]}>
+                          <Text style={[styles.headText, {fontSize: 12, padding: 1}]}>{Math.floor(1000 * (item.value / item.threshold))/10}%</Text>
+                          <View style={{width: SCREEN_WIDTH * .2, backgroundColor: 'white', height: SCREEN_HEIGHT * .01, borderWidth: 1, borderColor: 'black', flexDirection: 'row'}}>
+                            <View style={{backgroundColor: 'red', height: '100%', width: item.value >= item.threshold ? '100%' : (SCREEN_WIDTH * .2) * (startMetrics[startMetrics.findIndex(val => val.name == item.name)].value / item.threshold)}}/>
+                            <Animated.View style={[progressAnimations[index].animation, {backgroundColor: progressBarColor, height: '100%', alignItems: 'flex-end'}]}>
                               <Image source={progressImage} style={{height: '100%', width: BAR_WIDTH * .02, resizeMode: 'stretch', opacity: singeAnimation ? 1 : 0}}/>
                             </Animated.View>
                           </View>
@@ -242,8 +245,8 @@ const onSingeEnd = React.useCallback(() => {
                   ))}
                 </View>
               </ScrollView>
-              <View style={{width: SCREEN_WIDTH * .9, alignItems: 'center', alignSelf: 'center'}}>
-                 <TouchableOpacity style={{width: '100%'}} onPress={() => {
+              <View style={{width: '100%', alignItems: 'center', alignSelf: 'center'}}>
+                 <TouchableOpacity style={{width: '100%', alignSelf: 'center'}} onPress={() => {
                   setProgressMenu(false);
                  }}>
                   <LinearGradient colors={['red', '#390842']} style={[styles.controlButton, {backgroundColor: "red"}]}>

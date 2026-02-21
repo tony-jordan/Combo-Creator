@@ -91,12 +91,20 @@ const Home = () => {
   const medalScrollRef = useRef<ScrollView>(null);
   const isUserScrolling = useRef(false);
   const scrollX = useRef(0);
+
+  const [challenges, setChallenges] = useState<any[]>([])
+
   useEffect(() => {
     const containerWidth = challenges.length * 130
-
+    let pivotMultiple = (width/3);
+    if (challenges.length > 0) {
     const interval = setInterval(() => {
       if (isUserScrolling.current) return;
-      scrollX.current += width / 3; // ~ medal width + margin
+      if ((scrollX.current/pivotMultiple) % 1 != 0) {
+        let anchor = Math.floor(scrollX.current / pivotMultiple);
+        scrollX.current = anchor * pivotMultiple
+      }
+      scrollX.current += pivotMultiple; 
       if (scrollX.current > containerWidth) {
         scrollX.current = 0;
       }
@@ -105,9 +113,10 @@ const Home = () => {
         animated: true,
       });
     }, 5000);
+    return () => clearInterval(interval);
+  }
 
-  return () => clearInterval(interval);
-}, []);
+}, [challenges.length]);
 
   // animation values
   const { width } = useWindowDimensions();
@@ -294,8 +303,6 @@ const stopStrikeAnimation = () => {
     }
     return total;
   }
-
-  const [challenges, setChallenges] = useState<any[]>([])
 
   useFocusEffect(
     useCallback(() => {

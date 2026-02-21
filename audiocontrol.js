@@ -60,6 +60,20 @@ export function loadSingleBellSound() {
   });
 }
 
+// Load multiple sounds (returns Promise<Sound[]>)
+export async function loadBellSounds(size) {
+  const sounds = [];
+  for (let i = 0; i < size; i++) {
+    try {
+      const sound = await loadSingleBellSound();
+      sounds.push(sound);
+    } catch (e) {
+      console.error(`Error loading sound ${i}:`, e);
+    }
+  }
+  return sounds;
+}
+
 // Release all sound instances
 export function releaseBellSounds(arr) {
   if (!arr || !Array.isArray(arr)) return;

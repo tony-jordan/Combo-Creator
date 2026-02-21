@@ -8,9 +8,9 @@ import {
   FlatList,
   Text,
   StyleSheet,
-  Dimensions,
   TouchableOpacity,
   Image,
+  Dimensions,
 } from 'react-native';
 import { getDBConnection, getStrikeSets, getFavorites, DataSet } from '../utilities/DefaultInfo';
 import LinearGradient from 'react-native-linear-gradient';
@@ -26,6 +26,7 @@ type caroselProps = {
 }
 
 const SwipeSnapSelector = ( {setStrikeSet}: caroselProps ) => {
+  const width = Dimensions.get('window').width;
   const fav: DataSet = {id: -999, name: "Create workout using your favorited combos", strikes:"", locked: 1}
   const defaultFavorite: DataSet[] = [fav];
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -69,7 +70,7 @@ const SwipeSnapSelector = ( {setStrikeSet}: caroselProps ) => {
   function favoriteIndicator() {
     return(
       <View style={{borderStyle: "solid", borderWidth: 2, borderColor: "black", borderRadius: 5, backgroundColor: "#3f48cc", marginTop: "5%"}}>
-        <Image source={require("../assets/favorited.png")} style={{width: 40,  height: 40, resizeMode: 'contain', margin: "7%"}}/>
+        <Image source={require("../assets/favorited.png")} style={{width: width/3,  height: width/3, resizeMode: 'contain', margin: "7%"}}/>
       </View>
     )
   }
@@ -124,7 +125,7 @@ const SwipeSnapSelector = ( {setStrikeSet}: caroselProps ) => {
               <LinearGradient colors={['white', 'black']} style={[styles.card, isSelected && styles.cardSelected]}>
                 {/* Set up custom images for default strike sets */}
                 <Text style={styles.cardText}>{item.name}</Text>
-                {(item.id <= 3 && item.id >= 0) ? <Image source={getGByName(item.name)} style={{width: CARD_WIDTH - 100,  height: CARD_WIDTH - 100, resizeMode: 'contain', margin: "7%"}}/> : null}
+                {(item.id <= 3 && item.id >= 0) ? <Image source={getGByName(item.name)} style={{width: CARD_WIDTH /2,  height: CARD_WIDTH/2, resizeMode: 'contain', margin: "7%"}}/> : null}
                 {item.id === -999 ? favoriteIndicator() : null}
               </LinearGradient>
             </TouchableOpacity>

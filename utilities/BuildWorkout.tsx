@@ -375,7 +375,6 @@ export function BuildWorkout(props: {
         //en-us-x-sfg-local
         Tts.setDefaultVoice('en-us-x-iom-local')
         let v = Tts.voices();
-        console.log(v);
         if (timePerStrike >= 1250)
           Tts.setDefaultRate(0.5);
         else {
@@ -408,7 +407,10 @@ export function BuildWorkout(props: {
     useEffect(() => {
       if (tts) {
         if (activeStates.includes(true)) {
-          Tts.speak(currentCombo[activeStates.findIndex((item) => item == true)]);
+          let temp = currentCombo[activeStates.findIndex((item) => item == true)]
+          // correct pronounciation of 'lead'
+          temp = temp.replace('lead', 'leed');
+          Tts.speak(temp);
         }
       }
     }, [activeStates])
@@ -435,8 +437,8 @@ export function BuildWorkout(props: {
             // All throws of current combo done
             setCurrentComboIndexX(prev => {
                 const nextIndex = prev + 1;
+                setCompletedCount(nextIndex)
                 if (tts!) {
-                  setCompletedCount(nextIndex)
                   releaseStrikeSounds(strikeSounds);
                 }
                 if (nextIndex >= combos.length) {
@@ -498,6 +500,7 @@ export function BuildWorkout(props: {
                 })();
             }
             // set workout active to false to initiate navigation to workout summary
+            console.log(completedCount)
             grabCombos(combos, favIndex, completedCount)
             setRoundChange(!roundChange);
             setWorkoutActive(false);
