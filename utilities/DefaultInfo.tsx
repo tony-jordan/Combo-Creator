@@ -80,7 +80,12 @@ export const createChallengeTable = async (db: SQLiteDatabase) => {
     )`
   await db.executeSql(query);
   // migrate challenges to new versions
-  await migrate_Challenges(db);
+  try {
+    await migrate_Challenges(db);
+  }
+  catch (e) {
+    console.error(e);
+  }
 }
 
 // function for getting challenges

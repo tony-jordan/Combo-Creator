@@ -130,6 +130,7 @@ async function add_challenges(db: SQLiteDatabase) {
   for (let x = 0; x < result.rows.length; x++) {
     let item;
     if ( result.rows.item(x).tier != undefined) {
+      console.log(result.rows.item(x));
       item = {
         name: result.rows.item(x).name,
         description: result.rows.item(x).description,
@@ -140,6 +141,7 @@ async function add_challenges(db: SQLiteDatabase) {
       }
     }
     else {
+      console.log("finally parsing here");
       item = {
         name: result.rows.item(x).name,
         description: result.rows.item(x).description,
@@ -192,6 +194,7 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
       const new_challenge = challenges.find((item) => item.name = migration_challenges[x].new_name);
       if (new_challenge) {
         // parse thresholds
+        console.log("Parsing here");
         const thresholds = JSON.parse(new_challenge.thresholds);
         // set achieved if user value is greater >= highest threshold
         const achieved = (value >= thresholds[thresholds.length - 1])
@@ -203,7 +206,7 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
           }
         }
         await db.executeSql(update_query, [migration_challenges[x].new_name, new_challenge.description, 
-          achieved, tier, thresholds, migration_challenges[x].old_name]);
+          achieved, tier, new_challenge.thresholds, migration_challenges[x].old_name]);
         console.log(`Migrated Challenge ${migration_challenges[x].new_name}`);
       }
     }
