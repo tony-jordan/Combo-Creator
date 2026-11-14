@@ -186,7 +186,7 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
       const value = check.rows.item(0).value;
       // update name, description, rollback achieved if new tiers have not been eclipsed
       // update thresholds and tier based on new thresholds.
-      const update_query = `UPDATE challenges SET name = (?), desciption = (?), achieved = (?),
+      const update_query = `UPDATE challenges SET name = (?), description = (?), achieved = (?),
         tier = (?), thresholds = (?) WHERE name = (?)`;
       // find new description from challenge list
       const new_challenge = challenges.find((item) => item.name = migration_challenges[x].new_name);
@@ -202,7 +202,7 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
             tier++;
           }
         }
-        db.executeSql(update_query, [migration_challenges[x].new_name, new_challenge.description, 
+        await db.executeSql(update_query, [migration_challenges[x].new_name, new_challenge.description, 
           achieved, tier, thresholds, migration_challenges[x].old_name]);
         console.log(`Migrated Challenge ${migration_challenges[x].new_name}`);
       }
