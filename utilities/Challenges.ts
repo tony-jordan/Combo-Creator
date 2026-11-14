@@ -3,6 +3,7 @@
 // Desc: holds challenge hard coded data.
 
 import type { SQLiteDatabase } from 'react-native-sqlite-storage';
+import { migration_challenges } from './ChallengeMigration';
 
 export type metrics = {name: string, value: number, tier: number, threshold: number};
 
@@ -120,316 +121,413 @@ export const updateChallenge = async (db: SQLiteDatabase, name: string, amount: 
   }
 }
 
+// function for updating database with challenge changes. Preserves user stats
+export async function migrate_Challenges(db: SQLiteDatabase) {
+  for (let x = 0; x < migration_challenges.length; x++) {
+    // check to see if challenge has been migrated.
+    const existence_check = `SELECT * FROM challenges WHERE name = (?)`
+    const [check] = await db.executeSql(existence_check, [migration_challenges[x].old_name]);
+    // if old challenge is still present, update it
+    if (check.rows.length > 0) {
+      // grab attributes from old challenge
+      const value = check.rows.item(0).value;
+      // update name, description, rollback achieved if new tiers have not been eclipsed
+      // update thresholds and tier based on new thresholds.
+      const update_query = `UPDATE challenges SET name = (?), desciption = (?), achieved = (?),
+        tier = (?), thresholds = (?) WHERE name = (?)`;
+      // find new description from challenge list
+      const new_challenge = challenges.find((item) => item.name = migration_challenges[x].new_name);
+      if (new_challenge) {
+        // parse thresholds
+        const thresholds = JSON.parse(new_challenge.thresholds);
+        // set achieved if user value is greater >= highest threshold
+        const achieved = (value >= thresholds[thresholds.length - 1])
+        // find current tier based on challenge thresholds
+        let tier = 0;
+        for(let threshold in thresholds) {
+          if (value >= threshold) {
+            tier++;
+          }
+        }
+        db.executeSql(update_query, [migration_challenges[x].new_name, new_challenge.description, 
+          achieved, tier, thresholds, migration_challenges[x].old_name]);
+        console.log(`Migrated Challenge ${migration_challenges[x].new_name}`);
+      }
+    }
+
+  }
+}
+
 export const challenges = [
-    // jab
-    {
-        name: JSON.stringify([
-          'Jabbing Apprentice', 
-          'Intermediate Jabber', 
-          'Master Jabber', 
-          'God-Tier Jabber'
-        ]),
-        description: JSON.stringify([
-          'Throw 100 total jabs in guided workouts', 
-          'Throw 500 total jabs in guided workouts', 
-          'Throw 750 total jabs in guided workouts', 
-          'Throw 1000 total jabs in guided workouts'
-        ]),
-        regex: /^jab$/,
-        thresholds: JSON.stringify([100, 500, 750, 1000]),
-        value: 0,
-        achieved: 0,
-        tier: 0,
-    },
-    // cross
-{
-  name: JSON.stringify([
-    'Cross Trainee',
-    'Cross Examiner',
-    'Crossing Menace',
-    'THE Crosser'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total crosses in guided workouts',
-    'Throw 500 total crosses in guided workouts',
-    'Throw 750 total crosses in guided workouts',
-    'Throw 1000 total crosses in guided workouts'
-  ]),
-  regex: /^cross$/,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+// jab
+  {
+    name: JSON.stringify([
+      'Jab-Roookie',
+      'Apprentice Jabber',
+      'Intermediate Jabber',
+      'Professional Jabber',
+      'Master Jabber',
+      'God-Tier Jabber'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total jabs in guided workouts',
+      'Throw 250 total jabs in guided workouts',
+      'Throw 500 total jabs in guided workouts',
+      'Throw 750 total jabs in guided workouts',
+      'Throw 1000 total jabs in guided workouts',
+      'Throw 1500 total jabs in guided workouts'
+    ]),
+    regex: /^jab$/,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// hook
-{
-  name: JSON.stringify([
-    'Newbie Hooker',
-    'Certified Hooker',
-    'Captain Hooks',
-    'Hooked on Destruction'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total hooks in guided workouts',
-    'Throw 500 total hooks in guided workouts',
-    'Throw 750 total hooks in guided workouts',
-    'Throw 1000 total hooks in guided workouts'
-  ]),
-  regex: /^hook$/,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // cross
+  {
+    name: JSON.stringify([
+      'Cross-Rookie',
+      'Apprentice Crosser',
+      'Intermediate Crosser',
+      'Professional Crosser',
+      'Master Crosser',
+      'God-Tier Crosser'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total crosses in guided workouts',
+      'Throw 250 total crosses in guided workouts',
+      'Throw 500 total crosses in guided workouts',
+      'Throw 750 total crosses in guided workouts',
+      'Throw 1000 total crosses in guided workouts',
+      'Throw 1500 total crosses in guided workouts'
+    ]),
+    regex: /^cross$/,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// overhand
-{
-  name: JSON.stringify([
-    'Overhand Intern',
-    'Overhand Enthusiast',
-    'Meteor Fist Overhand',
-    "You're gonna kill someone kid"
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total overhands in guided workouts',
-    'Throw 500 total overhands in guided workouts',
-    'Throw 750 total overhands in guided workouts',
-    'Throw 1000 total overhands in guided workouts'
-  ]),
-  regex: /^over[- ]?hand$/,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // hook
+  {
+    name: JSON.stringify([
+      'Hook-Rookie',
+      'Apprentice Hooker',
+      'Intermediate Hooker',
+      'Professional Hooker',
+      'Master Hooker',
+      'God-Tier Hooker'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total hooks in guided workouts',
+      'Throw 250 total hooks in guided workouts',
+      'Throw 500 total hooks in guided workouts',
+      'Throw 750 total hooks in guided workouts',
+      'Throw 1000 total hooks in guided workouts',
+      'Throw 1500 total hooks in guided workouts'
+    ]),
+    regex: /^hook$/,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// uppercut
-{
-  name: JSON.stringify([
-    'Uppercut Rookie',
-    'Chin Checker',
-    'Send Them to Orbit',
-    'Peek-a-boo-er'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total uppercuts in guided workouts',
-    'Throw 500 total uppercuts in guided workouts',
-    'Throw 750 total uppercuts in guided workouts',
-    'Throw 1000 total uppercuts in guided workouts'
-  ]),
-  regex: /^upper[- ]?cut$/,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // overhand
+  {
+    name: JSON.stringify([
+      'Overhand-Rookie',
+      'Overhand Apprentice',
+      'Intermediate Overhander',
+      'Overhand Professional',
+      'Overhand Master',
+      'God-Tier Overhander'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total overhands in guided workouts',
+      'Throw 250 total overhands in guided workouts',
+      'Throw 500 total overhands in guided workouts',
+      'Throw 750 total overhands in guided workouts',
+      'Throw 1000 total overhands in guided workouts',
+      'Throw 1500 total overhands in guided workouts'
+    ]),
+    regex: /^over[- ]?hand$/,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// superman
-{
-  name: JSON.stringify([
-    'Sidekick',
-    'Anti-hero',
-    'Bona-fide Superhero',
-    'Super-DUPER man'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total superman punches in guided workouts',
-    'Throw 500 total superman punches in guided workouts',
-    'Throw 750 total superman punches in guided workouts',
-    'Throw 1000 total superman punches in guided workouts'
-  ]),
-  regex: /^super[- ]?man$/,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // uppercut
+  {
+    name: JSON.stringify([
+      'Uppercut-Rookie',
+      'Uppercut Apprentice',
+      'Intermediate Uppercutter',
+      'Uppercut Professional',
+      'Uppercut Master',
+      'God-Tier Uppercutter'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total uppercuts in guided workouts',
+      'Throw 250 total uppercuts in guided workouts',
+      'Throw 500 total uppercuts in guided workouts',
+      'Throw 750 total uppercuts in guided workouts',
+      'Throw 1000 total uppercuts in guided workouts',
+      'Throw 1500 total uppercuts in guided workouts'
+    ]),
+    regex: /^upper[- ]?cut$/,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// round kick
-{
-  name: JSON.stringify([
-    'Roundhouse Recruit',
-    'Bruised Shin Haver',
-    'Honorary Thai',
-    'Femur Obliterator'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total round kicks in guided workouts',
-    'Throw 500 total round kicks in guided workouts',
-    'Throw 750 total round kicks in guided workouts',
-    'Throw 1000 total round kicks in guided workouts'
-  ]),
-  regex: /^(round[- ]?(kicks|houses)|switch[- ]?kicks)$/,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // superman
+  {
+    name: JSON.stringify([
+      'Sidekick',
+      'Amateur Hero',
+      'Anti-Hero',
+      'Bona-fide Superhero',
+      'Planet Defender',
+      'World Conquerer'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total superman punches in guided workouts',
+      'Throw 250 total superman punches in guided workouts',
+      'Throw 500 total superman punches in guided workouts',
+      'Throw 750 total superman punches in guided workouts',
+      'Throw 1000 total superman punches in guided workouts',
+      'Throw 1500 total superman punches in guided workouts'
+    ]),
+    regex: /^super[- ]?man$/,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// knee
-{
-  name: JSON.stringify([
-    'Beg-knee-ner',
-    'Clinch Goblin',
-    'Sir Knees-a-lot',
-    'Rib Breaker'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total knees in guided workouts',
-    'Throw 500 total knees in guided workouts',
-    'Throw 750 total knees in guided workouts',
-    'Throw 1000 total knees in guided workouts'
-  ]),
-  regex: /^knee$/,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // round kick
+  {
+    name: JSON.stringify([
+      'Round-Kick-Rookie',
+      'Round Kick Apprentice',
+      'Intermediate Round Kicker',
+      'Round Kick Professional',
+      'Round Kick Master',
+      'God-Tier Round Kicker'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total round kicks in guided workouts',
+      'Throw 250 total round kicks in guided workouts',
+      'Throw 500 total round kicks in guided workouts',
+      'Throw 750 total round kicks in guided workouts',
+      'Throw 1000 total round kicks in guided workouts',
+      'Throw 1500 total round kicks in guided workouts'
+    ]),
+    regex: /^(round[- ]?(kicks|houses)|switch[- ]?kicks)$/,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// double punch
-{
-  name: JSON.stringify([
-    'Two-Piece Starter',
-    "Can't guard em both",
-    'A PAIR of knuckle sandwiches',
-    'Kung Fu Panda'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total double punches in guided workouts',
-    'Throw 500 total double punches in guided workouts',
-    'Throw 750 total double punches in guided workouts',
-    'Throw 1000 total double punches in guided workouts'
-  ]),
-  regex: /^double[- ]?punch$/i,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // knee
+  {
+    name: JSON.stringify([
+      'Knee-Rookie',
+      'Knee Apprentice',
+      'Intermediate Knee-er',
+      'Knee Professional',
+      'Knee Master',
+      'God-Tier Knee-er'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total knees in guided workouts',
+      'Throw 250 total knees in guided workouts',
+      'Throw 500 total knees in guided workouts',
+      'Throw 750 total knees in guided workouts',
+      'Throw 1000 total knees in guided workouts',
+      'Throw 1500 total knees in guided workouts'
+    ]),
+    regex: /^knee$/,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// ridge hand
-{
-  name: JSON.stringify([
-    'Amateur Ridger',
-    'Ridge Curious',
-    'Sideways Violence',
-    'Chop Supreme'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total ridge hands in guided workouts',
-    'Throw 500 total ridge hands in guided workouts',
-    'Throw 750 total ridge hands in guided workouts',
-    'Throw 1000 total ridge hands in guided workouts'
-  ]),
-  regex: /^ridge[- ]?hand$/i,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // double punch
+  {
+    name: JSON.stringify([
+      'Double-Punch-Rookie',
+      'Double Punch Apprentice',
+      'Intermediate Double Puncher',
+      'Double Punch Professional',
+      'Double Punch Master',
+      'God-Tier Double Puncher'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total double punches in guided workouts',
+      'Throw 250 total double punches in guided workouts',
+      'Throw 500 total double punches in guided workouts',
+      'Throw 750 total double punches in guided workouts',
+      'Throw 1000 total double punches in guided workouts',
+      'Throw 1500 total double punches in guided workouts'
+    ]),
+    regex: /^double[- ]?punch$/i,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// palm strike
-{
-  name: JSON.stringify([
-    'Open-Handed Apprentice',
-    'Respectful Violence',
-    'High-Five of Doom',
-    'Palm of Judgment'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total palm strikes in guided workouts',
-    'Throw 500 total palm strikes in guided workouts',
-    'Throw 750 total palm strikes in guided workouts',
-    'Throw 1000 total palm strikes in guided workouts'
-  ]),
-  regex: /^palm[- ]?strike$/i,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // ridge hand
+  {
+    name: JSON.stringify([
+      'Ridge-Hand-Rookie',
+      'Ridge-Hand Apprentice',
+      'Intermediate Ridge-hander',
+      'Ridge-Hand Professional',
+      'Ridge-Hand Master',
+      'God-Tier Ridge-hander'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total ridge hands in guided workouts',
+      'Throw 250 total ridge hands in guided workouts',
+      'Throw 500 total ridge hands in guided workouts',
+      'Throw 750 total ridge hands in guided workouts',
+      'Throw 1000 total ridge hands in guided workouts',
+      'Throw 1500 total ridge hands in guided workouts'
+    ]),
+    regex: /^ridge[- ]?hand$/i,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// snap kick
-{
-  name: JSON.stringify([
-    'Basic Snapper',
-    'Whiplash Enthusiast',
-    'Blink-and-You-Missed-It',
-    'Oof ouch my chin'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total snap kicks in guided workouts',
-    'Throw 500 total snap kicks in guided workouts',
-    'Throw 750 total snap kicks in guided workouts',
-    'Throw 1000 total snap kicks in guided workouts'
-  ]),
-  regex: /^snap[- ]?kick$/i,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // palm strike
+  {
+    name: JSON.stringify([
+      'Palm-Strike-Rookie',
+      'Palm Strike Apprentice',
+      'Intermediate Palm Striker',
+      'Palm Strike Professional',
+      'Palm Strike Master',
+      'God-Tier Palm Striker'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total palm strikes in guided workouts',
+      'Throw 250 total palm strikes in guided workouts',
+      'Throw 500 total palm strikes in guided workouts',
+      'Throw 750 total palm strikes in guided workouts',
+      'Throw 1000 total palm strikes in guided workouts',
+      'Throw 1500 total palm strikes in guided workouts'
+    ]),
+    regex: /^palm[- ]?strike$/i,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// heel kick
-{
-  name: JSON.stringify([
-    'Heel Turn',
-    'Backstabber',
-    'Eyes-in-the-Back-Kicker',
-    'No Look. All Damage.'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total heel kicks in guided workouts',
-    'Throw 500 total heel kicks in guided workouts',
-    'Throw 750 total heel kicks in guided workouts',
-    'Throw 1000 total heel kicks in guided workouts'
-  ]),
-  regex: /^heel[- ]?kick$/i,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // snap kick
+  {
+    name: JSON.stringify([
+      'Snap-Kick-Rookie',
+      'Snap Kick Apprentice',
+      'Intermediate Snap Kicker',
+      'Snap Kick Professional',
+      'Snap Kick Master',
+      'God-Tier Snap Kicker'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total snap kicks in guided workouts',
+      'Throw 250 total snap kicks in guided workouts',
+      'Throw 500 total snap kicks in guided workouts',
+      'Throw 750 total snap kicks in guided workouts',
+      'Throw 1000 total snap kicks in guided workouts',
+      'Throw 1500 total snap kicks in guided workouts'
+    ]),
+    regex: /^snap[- ]?kick$/i,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
-// teep
-{
-  name: JSON.stringify([
-    'Sleeper Teeper',
-    'Season for Teepin',
-    'Personal Space Enjoyer',
-    'Teepzilla'
-  ]),
-  description: JSON.stringify([
-    'Throw 100 total teeps in guided workouts',
-    'Throw 500 total teeps in guided workouts',
-    'Throw 750 total teeps in guided workouts',
-    'Throw 1000 total teeps in guided workouts'
-  ]),
-  regex: /^teep$/,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
-  value: 0,
-  achieved: 0,
-  tier: 0,
-},
+  // heel kick
+  {
+    name: JSON.stringify([
+      'Heel-Kick-Rookie',
+      'Heel Kick Apprentice',
+      'Intermediate Heel Kicker',
+      'Heel Kick Professional',
+      'Heel Kick Master',
+      'God-Tier Heel Kicker'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total heel kicks in guided workouts',
+      'Throw 250 total heel kicks in guided workouts',
+      'Throw 500 total heel kicks in guided workouts',
+      'Throw 750 total heel kicks in guided workouts',
+      'Throw 1000 total heel kicks in guided workouts',
+      'Throw 1500 total heel kicks in guided workouts'
+    ]),
+    regex: /^heel[- ]?kick$/i,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 
+  // teep
+  {
+    name: JSON.stringify([
+      'Teep-Rookie',
+      'Teep Apprentice',
+      'Intermediate Teeper',
+      'Teep Professional',
+      'Teep Master',
+      'God-Tier Teeper'
+    ]),
+    description: JSON.stringify([
+      'Throw 100 total teeps in guided workouts',
+      'Throw 250 total teeps in guided workouts',
+      'Throw 500 total teeps in guided workouts',
+      'Throw 750 total teeps in guided workouts',
+      'Throw 1000 total teeps in guided workouts',
+      'Throw 1500 total teeps in guided workouts'
+    ]),
+    regex: /^teep$/,
+    thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
+    value: 0,
+    achieved: 0,
+    tier: 0,
+  },
 // elbows
-{
+  {
   name: JSON.stringify([
-    'Elbow Rookie',
-    'Close-Range Negotiator',
-    'Sharp Conversations',
-    'Built Different (and Dangerous)'
+    'Elbow-Rookie',
+    'Elbow Apprentice',
+    'Intermediate Elbower',
+    'Elbow Professional',
+    'Elbow Master',
+    'God-Tier Elbower'
   ]),
   description: JSON.stringify([
     'Throw 100 total elbows in guided workouts',
+    'Throw 250 total elbows in guided workouts',
     'Throw 500 total elbows in guided workouts',
     'Throw 750 total elbows in guided workouts',
-    'Throw 1000 total elbows in guided workouts'
+    'Throw 1000 total elbows in guided workouts',
+    'Throw 1500 total elbows in guided workouts'
   ]),
   regex: /^elbow$/,
-  thresholds: JSON.stringify([100, 500, 750, 1000]),
+  thresholds: JSON.stringify([100, 250, 500, 750, 1000, 1500]),
   value: 0,
   achieved: 0,
   tier: 0,
@@ -565,52 +663,62 @@ export const medalImages = [
   },
 
   {
-    name: "Jabbing Apprentice",
+    name: "Jab-Roookie",
     items: [
-      require('../assets/medals/Jabbing-Apprentice/t1.png'),
-      require('../assets/medals/Jabbing-Apprentice/t2.png'),
-      require('../assets/medals/Jabbing-Apprentice/t3.png'),
-      require('../assets/medals/Jabbing-Apprentice/t4.png'),
+      require('../assets/medals/Jab-Rookie/t1.png'),
+      require('../assets/medals/Jab-Rookie/t2.png'),
+      require('../assets/medals/Jab-Rookie/t3.png'),
+      require('../assets/medals/Jab-Rookie/t4.png'),
+      require('../assets/medals/Jab-Rookie/t5.png'),
+      require('../assets/medals/Jab-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Cross Trainee",
+    name: "Cross-Rookie",
     items: [
-      require('../assets/medals/Cross-Trainee/t1.png'),
-      require('../assets/medals/Cross-Trainee/t2.png'),
-      require('../assets/medals/Cross-Trainee/t3.png'),
-      require('../assets/medals/Cross-Trainee/t4.png'),
+      require('../assets/medals/Cross-Rookie/t1.png'),
+      require('../assets/medals/Cross-Rookie/t2.png'),
+      require('../assets/medals/Cross-Rookie/t3.png'),
+      require('../assets/medals/Cross-Rookie/t4.png'),
+      require('../assets/medals/Cross-Rookie/t5.png'),
+      require('../assets/medals/Cross-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Newbie Hooker",
+    name: "Hook-Rookie",
     items: [
-      require('../assets/medals/Newbie-Hooker/t1.png'),
-      require('../assets/medals/Newbie-Hooker/t2.png'),
-      require('../assets/medals/Newbie-Hooker/t3.png'),
-      require('../assets/medals/Newbie-Hooker/t4.png'),
+      require('../assets/medals/Hook-Rookie/t1.png'),
+      require('../assets/medals/Hook-Rookie/t2.png'),
+      require('../assets/medals/Hook-Rookie/t3.png'),
+      require('../assets/medals/Hook-Rookie/t4.png'),
+      require('../assets/medals/Hook-Rookie/t5.png'),
+      require('../assets/medals/Hook-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Overhand Intern",
+    name: "Overhand-Rookie",
     items: [
-      require('../assets/medals/Overhand-Intern/t1.png'),
-      require('../assets/medals/Overhand-Intern/t2.png'),
-      require('../assets/medals/Overhand-Intern/t3.png'),
-      require('../assets/medals/Overhand-Intern/t4.png'),
+      require('../assets/medals/Overhand-Rookie/t1.png'),
+      require('../assets/medals/Overhand-Rookie/t2.png'),
+      require('../assets/medals/Overhand-Rookie/t3.png'),
+      require('../assets/medals/Overhand-Rookie/t4.png'),
+      require('../assets/medals/Overhand-Rookie/t5.png'),
+      require('../assets/medals/Overhand-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Uppercut Rookie",
+    name: "Uppercut-Rookie",
     items: [
       require('../assets/medals/Uppercut-Rookie/t1.png'),
       require('../assets/medals/Uppercut-Rookie/t2.png'),
       require('../assets/medals/Uppercut-Rookie/t3.png'),
       require('../assets/medals/Uppercut-Rookie/t4.png'),
+      require('../assets/medals/Uppercut-Rookie/t5.png'),
+      require('../assets/medals/Uppercut-Rookie/t6.png'),
     ],
   },
 
@@ -621,96 +729,116 @@ export const medalImages = [
       require('../assets/medals/Sidekick/t2.png'),
       require('../assets/medals/Sidekick/t3.png'),
       require('../assets/medals/Sidekick/t4.png'),
+      require('../assets/medals/Sidekick/t5.png'),
+      require('../assets/medals/Sidekick/t6.png'),
     ],
   },
 
   {
-    name: "Roundhouse Recruit",
+    name: "Round-Kick-Rookie",
     items: [
-      require('../assets/medals/Roundhouse-Recruit/t1.png'),
-      require('../assets/medals/Roundhouse-Recruit/t2.png'),
-      require('../assets/medals/Roundhouse-Recruit/t3.png'),
-      require('../assets/medals/Roundhouse-Recruit/t4.png'),
+      require('../assets/medals/Round-Kick-Rookie/t1.png'),
+      require('../assets/medals/Round-Kick-Rookie/t2.png'),
+      require('../assets/medals/Round-Kick-Rookie/t3.png'),
+      require('../assets/medals/Round-Kick-Rookie/t4.png'),
+      require('../assets/medals/Round-Kick-Rookie/t5.png'),
+      require('../assets/medals/Round-Kick-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Beg-knee-ner",
+    name: "Knee-Rookie",
     items: [
-      require('../assets/medals/Beg-knee-ner/t1.png'),
-      require('../assets/medals/Beg-knee-ner/t2.png'),
-      require('../assets/medals/Beg-knee-ner/t3.png'),
-      require('../assets/medals/Beg-knee-ner/t4.png'),
+      require('../assets/medals/Knee-Rookie/t1.png'),
+      require('../assets/medals/Knee-Rookie/t2.png'),
+      require('../assets/medals/Knee-Rookie/t3.png'),
+      require('../assets/medals/Knee-Rookie/t4.png'),
+      require('../assets/medals/Knee-Rookie/t5.png'),
+      require('../assets/medals/Knee-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Two-Piece Starter",
+    name: "Double-Punch-Rookie",
     items: [
-      require('../assets/medals/Two-Piece-Starter/t1.png'),
-      require('../assets/medals/Two-Piece-Starter/t2.png'),
-      require('../assets/medals/Two-Piece-Starter/t3.png'),
-      require('../assets/medals/Two-Piece-Starter/t4.png'),
+      require('../assets/medals/Double-Punch-Rookie/t1.png'),
+      require('../assets/medals/Double-Punch-Rookie/t2.png'),
+      require('../assets/medals/Double-Punch-Rookie/t3.png'),
+      require('../assets/medals/Double-Punch-Rookie/t4.png'),
+      require('../assets/medals/Double-Punch-Rookie/t5.png'),
+      require('../assets/medals/Double-Punch-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Amateur Ridger",
+    name: "Ridge-Hand-Rookie",
     items: [
-      require('../assets/medals/Amateur-Ridger/t1.png'),
-      require('../assets/medals/Amateur-Ridger/t2.png'),
-      require('../assets/medals/Amateur-Ridger/t3.png'),
-      require('../assets/medals/Amateur-Ridger/t4.png'),
+      require('../assets/medals/Ridge-Hand-Rookie/t1.png'),
+      require('../assets/medals/Ridge-Hand-Rookie/t2.png'),
+      require('../assets/medals/Ridge-Hand-Rookie/t3.png'),
+      require('../assets/medals/Ridge-Hand-Rookie/t4.png'),
+      require('../assets/medals/Ridge-Hand-Rookie/t5.png'),
+      require('../assets/medals/Ridge-Hand-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Open-Handed Apprentice",
+    name: "Palm-Strike-Rookie",
     items: [
-      require('../assets/medals/Open-Handed-Apprentice/t1.png'),
-      require('../assets/medals/Open-Handed-Apprentice/t2.png'),
-      require('../assets/medals/Open-Handed-Apprentice/t3.png'),
-      require('../assets/medals/Open-Handed-Apprentice/t4.png'),
+      require('../assets/medals/Palm-Strike-Rookie/t1.png'),
+      require('../assets/medals/Palm-Strike-Rookie/t2.png'),
+      require('../assets/medals/Palm-Strike-Rookie/t3.png'),
+      require('../assets/medals/Palm-Strike-Rookie/t4.png'),
+      require('../assets/medals/Palm-Strike-Rookie/t5.png'),
+      require('../assets/medals/Palm-Strike-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Basic Snapper",
+    name: "Snap-Kick-Rookie",
     items: [
-      require('../assets/medals/Basic-Snapper/t1.png'),
-      require('../assets/medals/Basic-Snapper/t2.png'),
-      require('../assets/medals/Basic-Snapper/t3.png'),
-      require('../assets/medals/Basic-Snapper/t4.png'),
+      require('../assets/medals/Snap-Kick-Rookie/t1.png'),
+      require('../assets/medals/Snap-Kick-Rookie/t2.png'),
+      require('../assets/medals/Snap-Kick-Rookie/t3.png'),
+      require('../assets/medals/Snap-Kick-Rookie/t4.png'),
+      require('../assets/medals/Snap-Kick-Rookie/t5.png'),
+      require('../assets/medals/Snap-Kick-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Heel Turn",
+    name: "Heel-Kick-Rookie",
     items: [
-      require('../assets/medals/Heel-Turn/t1.png'),
-      require('../assets/medals/Heel-Turn/t2.png'),
-      require('../assets/medals/Heel-Turn/t3.png'),
-      require('../assets/medals/Heel-Turn/t4.png'),
+      require('../assets/medals/Heel-Kick-Rookie/t1.png'),
+      require('../assets/medals/Heel-Kick-Rookie/t2.png'),
+      require('../assets/medals/Heel-Kick-Rookie/t3.png'),
+      require('../assets/medals/Heel-Kick-Rookie/t4.png'),
+      require('../assets/medals/Heel-Kick-Rookie/t5.png'),
+      require('../assets/medals/Heel-Kick-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Sleeper Teeper",
+    name: "Teep-Rookie",
     items: [
-      require('../assets/medals/Sleeper-Teeper/t1.png'),
-      require('../assets/medals/Sleeper-Teeper/t2.png'),
-      require('../assets/medals/Sleeper-Teeper/t3.png'),
-      require('../assets/medals/Sleeper-Teeper/t4.png'),
+      require('../assets/medals/Teep-Rookie/t1.png'),
+      require('../assets/medals/Teep-Rookie/t2.png'),
+      require('../assets/medals/Teep-Rookie/t3.png'),
+      require('../assets/medals/Teep-Rookie/t4.png'),
+      require('../assets/medals/Teep-Rookie/t5.png'),
+      require('../assets/medals/Teep-Rookie/t6.png'),
     ],
   },
 
   {
-    name: "Elbow Rookie",
+    name: "Elbow-Rookie",
     items: [
       require('../assets/medals/Elbow-Rookie/t1.png'),
       require('../assets/medals/Elbow-Rookie/t2.png'),
       require('../assets/medals/Elbow-Rookie/t3.png'),
       require('../assets/medals/Elbow-Rookie/t4.png'),
+      require('../assets/medals/Elbow-Rookie/t5.png'),
+      require('../assets/medals/Elbow-Rookie/t6.png'),
     ],
   },
 ];

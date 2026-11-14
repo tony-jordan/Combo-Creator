@@ -4,7 +4,7 @@
 
 import SQLite from 'react-native-sqlite-storage';
 import type { SQLiteDatabase } from 'react-native-sqlite-storage';
-import { challenges } from './Challenges';
+import { challenges, migrate_Challenges } from './Challenges';
 
 
 // instantiate database
@@ -79,6 +79,9 @@ export const createChallengeTable = async (db: SQLiteDatabase) => {
       tier INTEGER
     )`
   await db.executeSql(query);
+  // migrate challenges to new versions
+  await migrate_Challenges(db);
+
   // ensure all challenges are present in database
   const [result] = await db.executeSql('SELECT * FROM challenges');
   const rows = []
