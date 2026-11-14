@@ -200,8 +200,8 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
         const achieved = (value >= thresholds[thresholds.length - 1])
         // find current tier based on challenge thresholds
         let tier = 0;
-        for(let threshold in thresholds) {
-          if (value >= threshold) {
+        for(let i = 0; i < thresholds.length; i++) {
+          if (value >= thresholds[i]) {
             tier++;
           }
         }
