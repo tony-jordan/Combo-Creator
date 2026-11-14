@@ -121,6 +121,59 @@ export const updateChallenge = async (db: SQLiteDatabase, name: string, amount: 
   }
 }
 
+// function for adding new detected challenges
+async function add_challenges(db: SQLiteDatabase) {
+  // ensure all challenges are present in database
+  let query;
+  const [result] = await db.executeSql('SELECT * FROM challenges');
+  const rows = []
+  for (let x = 0; x < result.rows.length; x++) {
+    let item;
+    if ( result.rows.item(x).tier != undefined) {
+      item = {
+        name: result.rows.item(x).name,
+        description: result.rows.item(x).description,
+        achieved: result.rows.item(x).achieved,
+        tier: result.rows.item(x).tier,
+        thresholds: JSON.parse(result.rows.item(x).thresholds),
+        value: result.rows.item(x).value
+      }
+    }
+    else {
+      item = {
+        name: result.rows.item(x).name,
+        description: result.rows.item(x).description,
+        achieved: result.rows.item(x).achieved,
+        thresholds: JSON.parse(result.rows.item(x).thresholds),
+        value: result.rows.item(x).value
+      }
+    }
+    rows.push(item)
+  }
+  console.log(rows);
+  for (let x = 0; x < challenges.length; x++) {
+    let found = false;
+    for (let y = 0; y < rows.length; y++) {
+      // if challenge is not in database, add
+      if (rows[y].name == challenges[x].name) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      console.log(challenges[x].name + " was marked as a new challenge")
+      if (challenges[x].tier != undefined) {
+        query = `INSERT INTO challenges (name, description, achieved, thresholds, value, tier) VALUES (?, ?, 0, ?, ?, ?)`;
+        await db.executeSql(query, [challenges[x].name, challenges[x].description, challenges[x].thresholds, challenges[x].value, challenges[x].tier])
+      }
+      else {
+        query = `INSERT INTO challenges (name, description, achieved, thresholds, value) VALUES (?, ?, 0, ?, 0)`;
+        await db.executeSql(query, [challenges[x].name, challenges[x].description, challenges[x].thresholds])
+      }
+    }
+  }
+}
+
 // function for updating database with challenge changes. Preserves user stats
 export async function migrate_Challenges(db: SQLiteDatabase) {
   for (let x = 0; x < migration_challenges.length; x++) {
@@ -154,8 +207,9 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
         console.log(`Migrated Challenge ${migration_challenges[x].new_name}`);
       }
     }
-
   }
+  // add any missing challenges
+  await add_challenges(db);
 }
 
 export const challenges = [
