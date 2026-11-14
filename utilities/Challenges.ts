@@ -130,7 +130,6 @@ async function add_challenges(db: SQLiteDatabase) {
   for (let x = 0; x < result.rows.length; x++) {
     let item;
     if ( result.rows.item(x).tier != undefined) {
-      console.log(result.rows.item(x));
       item = {
         name: result.rows.item(x).name,
         description: result.rows.item(x).description,
@@ -179,6 +178,7 @@ async function add_challenges(db: SQLiteDatabase) {
 // function for updating database with challenge changes. Preserves user stats
 export async function migrate_Challenges(db: SQLiteDatabase) {
   for (let x = 0; x < migration_challenges.length; x++) {
+    console.log(migration_challenges[x]);
     // check to see if challenge has been migrated.
     const existence_check = `SELECT * FROM challenges WHERE name = (?)`
     const [check] = await db.executeSql(existence_check, [migration_challenges[x].old_name]);
