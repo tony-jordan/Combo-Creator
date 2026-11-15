@@ -188,7 +188,7 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
       const update_query = `UPDATE challenges SET name = (?), description = (?), achieved = (?),
         tier = (?), thresholds = (?) WHERE name = (?)`;
       // find new description from challenge list
-      const new_challenge = challenges.find((item) => item.name = migration_challenges[x].new_name);
+      const new_challenge = challenges.find((item) => item.name == migration_challenges[x].new_name);
       if (new_challenge) {
         // parse thresholds
         const thresholds = JSON.parse(new_challenge.thresholds);
@@ -201,7 +201,6 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
             tier++;
           }
         }
-        console.log(`New Challenge: ${new_challenge.name} ${new_challenge.description}`);
         await db.executeSql(update_query, [migration_challenges[x].new_name, new_challenge.description, 
           achieved, tier, new_challenge.thresholds, migration_challenges[x].old_name]);
       }
