@@ -194,7 +194,6 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
       const new_challenge = challenges.find((item) => item.name = migration_challenges[x].new_name);
       if (new_challenge) {
         // parse thresholds
-        console.log("Parsing here");
         const thresholds = JSON.parse(new_challenge.thresholds);
         // set achieved if user value is greater >= highest threshold
         const achieved = (value >= thresholds[thresholds.length - 1])
@@ -205,7 +204,7 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
             tier++;
           }
         }
-        console.log(new_challenge);
+        console.log(new_challenge.description);
         await db.executeSql(update_query, [migration_challenges[x].new_name, new_challenge.description, 
           achieved, tier, new_challenge.thresholds, migration_challenges[x].old_name]);
         console.log(`Migrated Challenge ${migration_challenges[x].new_name}`);
