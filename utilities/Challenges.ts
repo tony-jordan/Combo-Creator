@@ -140,7 +140,6 @@ async function add_challenges(db: SQLiteDatabase) {
       }
     }
     else {
-      console.log("finally parsing here");
       item = {
         name: result.rows.item(x).name,
         description: result.rows.item(x).description,
@@ -151,7 +150,6 @@ async function add_challenges(db: SQLiteDatabase) {
     }
     rows.push(item)
   }
-  console.log(rows);
   for (let x = 0; x < challenges.length; x++) {
     let found = false;
     for (let y = 0; y < rows.length; y++) {
@@ -178,7 +176,6 @@ async function add_challenges(db: SQLiteDatabase) {
 // function for updating database with challenge changes. Preserves user stats
 export async function migrate_Challenges(db: SQLiteDatabase) {
   for (let x = 0; x < migration_challenges.length; x++) {
-    console.log(migration_challenges[x]);
     // check to see if challenge has been migrated.
     const existence_check = `SELECT * FROM challenges WHERE name = (?)`
     const [check] = await db.executeSql(existence_check, [migration_challenges[x].old_name]);
@@ -204,7 +201,8 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
             tier++;
           }
         }
-        console.log(`Old Challenge: ${migration_challenges[x]}\nNew Challenge: ${new_challenge}`)
+        console.log(`Old Challenge: ${migration_challenges[x]}`)
+        console.log(`New Challenge: ${new_challenge}`);
         await db.executeSql(update_query, [migration_challenges[x].new_name, new_challenge.description, 
           achieved, tier, new_challenge.thresholds, migration_challenges[x].old_name]);
       }
