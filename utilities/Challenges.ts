@@ -201,8 +201,7 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
             tier++;
           }
         }
-        console.log(`Old Challenge: ${migration_challenges[x]}`)
-        console.log(`New Challenge: ${new_challenge}`);
+        console.log(`New Challenge: ${new_challenge.name} ${new_challenge.description}`);
         await db.executeSql(update_query, [migration_challenges[x].new_name, new_challenge.description, 
           achieved, tier, new_challenge.thresholds, migration_challenges[x].old_name]);
       }
