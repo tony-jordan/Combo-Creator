@@ -8,22 +8,24 @@ import { migration_challenges } from './ChallengeMigration';
 export type metrics = {name: string, value: number, tier: number, threshold: number};
 
 export const guidedWorkoutChallenges = [
-  JSON.stringify(['Jabbing Apprentice', 'Intermediate Jabber', 'Master Jabber', 'God-Tier Jabber']),
-  JSON.stringify(['Cross Trainee','Cross Examiner','Crossing Menace','THE Crosser']),
-  JSON.stringify(['Newbie Hooker', 'Certified Hooker', 'Captain Hooks','Hooked on Destruction']),
-  JSON.stringify(['Uppercut Rookie','Chin Checker','Send Them to Orbit','Peek-a-boo-er']),
-  JSON.stringify(['Overhand Intern','Overhand Enthusiast','Meteor Fist Overhand',"You're gonna kill someone kid"]),
-  JSON.stringify(['Amateur Ridger','Ridge Curious','Sideways Violence','Chop Supreme']),
-  JSON.stringify(['Sidekick','Anti-hero','Bona-fide Superhero','Super-DUPER man']),
+  JSON.stringify(['Jab-Roookie', 'Apprentice Jabber', 'Intermediate Jabber', 'Professional Jabber', 'Master Jabber', 'God-Tier Jabber']),
+  JSON.stringify(['Cross-Rookie', 'Apprentice Crosser', 'Intermediate Crosser', 'Professional Crosser', 'Master Crosser', 'God-Tier Crosser']),
+  JSON.stringify(['Hook-Rookie', 'Apprentice Hooker', 'Intermediate Hooker', 'Professional Hooker', 'Master Hooker', 'God-Tier Hooker']),
+  JSON.stringify(['Uppercut-Rookie', 'Uppercut Apprentice', 'Intermediate Uppercutter', 'Uppercut Professional', 'Uppercut Master', 'God-Tier Uppercutter']),
+  JSON.stringify(['Overhand-Rookie', 'Overhand Apprentice', 'Intermediate Overhander', 'Overhand Professional', 'Overhand Master', 'God-Tier Overhander']),
+  JSON.stringify(['Ridge-Hand-Rookie', 'Ridge-Hand Apprentice', 'Intermediate Ridge-hander', 'Ridge-Hand Professional', 'Ridge-Hand Master', 'God-Tier Ridge-hander']),
+  JSON.stringify(['Sidekick','Amateur Hero', 'Anti-Hero','Bona-fide Superhero','Planet Defender', 'World Conquerer']),
+  JSON.stringify(['Round-Kick-Rookie', 'Round Kick Apprentice', 'Intermediate Round Kicker', 'Round Kick Professional', 'Round Kick Master', 'God-Tier Round Kicker']),
+  JSON.stringify(['Knee-Rookie', 'Knee Apprentice', 'Intermediate Knee-er', 'Knee Professional', 'Knee Master', 'God-Tier Knee-er']),
   'Banshee Crusher',
-  JSON.stringify(['Open-Handed Apprentice','Respectful Violence','High-Five of Doom','Palm of Judgment']),
-  JSON.stringify(['Basic Snapper','Whiplash Enthusiast','Blink-and-You-Missed-It','Oof ouch my chin']),
-  JSON.stringify(['Heel Turn','Backstabber','Eyes-in-the-Back-Kicker','No Look. All Damage.']),
-  JSON.stringify(['Sleeper Teeper','Season for Teepin','Personal Space Enjoyer','Teepzilla']),
-  JSON.stringify(['Elbow Rookie','Close-Range Negotiator','Sharp Conversations','Built Different (and Dangerous)']),
+  JSON.stringify(['Palm-Strike-Rookie', 'Palm Strike Apprentice', 'Intermediate Palm Striker', 'Palm Strike Professional', 'Palm Strike Master', 'God-Tier Palm Striker']),
+  JSON.stringify(['Snap-Kick-Rookie', 'Snap Kick Apprentice', 'Intermediate Snap Kicker', 'Snap Kick Professional', 'Snap Kick Master', 'God-Tier Snap Kicker']),
+  JSON.stringify(['Heel-Kick-Rookie', 'Heel Kick Apprentice', 'Intermediate Heel Kicker', 'Heel Kick Professional', 'Heel Kick Master', 'God-Tier Heel Kicker']),
+  JSON.stringify(['Teep-Rookie', 'Teep Apprentice', 'Intermediate Teeper', 'Teep Professional', 'Teep Master', 'God-Tier Teeper']),
+  JSON.stringify(['Elbow-Rookie', 'Elbow Apprentice', 'Intermediate Elbower', 'Elbow Professional', 'Elbow Master', 'God-Tier Elbower']),
   'Tatsumaki',
   'Nut Buster',
-  JSON.stringify(['Two-Piece Starter',"Can't guard em both",'A PAIR of knuckle sandwiches','Kung Fu Panda']),
+  JSON.stringify(['Double-Punch-Rookie', 'Double Punch Apprentice', 'Intermediate Double Puncher', 'Double Punch Professional', 'Double Punch Master', 'God-Tier Double Puncher']),
   'Legs of Steel',
   'Ultra Instinct',
   'I fear not the man who has practiced 1000 strikes',
@@ -208,6 +210,12 @@ export async function migrate_Challenges(db: SQLiteDatabase) {
   }
   // add any missing challenges
   await add_challenges(db);
+}
+
+// function for easily getting challenges based on strike name
+export function get_base_challenge_name_by_strike(name: string) {
+  const result = guidedWorkoutChallenges.find((item) => item.includes(name));
+  return result;
 }
 
 export const challenges = [

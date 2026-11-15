@@ -15,7 +15,7 @@ import { WorkoutByStrikeSet, WorkoutByFavorite } from './WorkoutObject';
 import { useKeepAwake, deactivateKeepAwake } from '@sayem314/react-native-keep-awake';
 import { grabCombos } from '../components/WorkoutExecution';
 import LinearGradient from 'react-native-linear-gradient';
-import { updateChallenge } from './Challenges';
+import { updateChallenge, get_base_challenge_name_by_strike } from './Challenges';
 import Tts from 'react-native-tts';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'WorkoutExecution'>;
@@ -228,58 +228,89 @@ export function BuildWorkout(props: {
       })
       
     if (checks.jab > 0) {
-      updateChallenge(db, JSON.stringify(['Jabbing Apprentice', 'Intermediate Jabber', 'Master Jabber', 'God-Tier Jabber']), checks.jab);
+      const jab = get_base_challenge_name_by_strike('Jab');
+      if (jab)
+        updateChallenge(db, jab, checks.jab);
     }
     if (checks.cross > 0) {
-      updateChallenge(db, JSON.stringify(['Cross Trainee','Cross Examiner','Crossing Menace','THE Crosser']), checks.cross);
+      const cross = get_base_challenge_name_by_strike('Cross');
+      if (cross)
+        updateChallenge(db, cross, checks.cross);
     }
     if (checks.hook > 0) {
-      updateChallenge(db, JSON.stringify(['Newbie Hooker', 'Certified Hooker', 'Captain Hooks','Hooked on Destruction']), checks.hook);
+      const hook = get_base_challenge_name_by_strike('Hook');
+      if (hook)
+        updateChallenge(db, hook, checks.hook);
     }
     if (checks.uppercut > 0) {
-     updateChallenge(db, JSON.stringify(['Uppercut Rookie','Chin Checker','Send Them to Orbit','Peek-a-boo-er']), checks.uppercut);
-    }
+      const uppercut = get_base_challenge_name_by_strike('Uppercut');
+      if (uppercut)
+        updateChallenge(db, uppercut, checks.uppercut);
+      }
     if (checks.overhand > 0) {
-      updateChallenge(db, JSON.stringify(['Overhand Intern','Overhand Enthusiast','Meteor Fist Overhand',"You're gonna kill someone kid"]), checks.overhand);
+      const overhand = get_base_challenge_name_by_strike('Overhand');
+      if (overhand)
+        updateChallenge(db, overhand, checks.overhand);
     }
     if (checks.ridgehand > 0) {
-        updateChallenge(db, JSON.stringify(['Amateur Ridger','Ridge Curious','Sideways Violence','Chop Supreme']), checks.ridgehand);
+      const ridgehand = get_base_challenge_name_by_strike('Ridge-Hand');
+      if (ridgehand)
+        updateChallenge(db, ridgehand, checks.ridgehand);
     }
     if (checks.superman > 0) {
-        updateChallenge(db, JSON.stringify(['Sidekick','Anti-hero','Bona-fide Superhero','Super-DUPER man']), checks.superman);
-        updateChallenge(db, 'Banshee Crusher', checks.superman);
+      const superman = get_base_challenge_name_by_strike('Sidekick');
+      if (superman)
+        updateChallenge(db, superman, checks.superman);
+
+      updateChallenge(db, 'Banshee Crusher', checks.superman);
     }
     if (checks.palmstrike > 0) {
-      updateChallenge(db, JSON.stringify(['Open-Handed Apprentice','Respectful Violence','High-Five of Doom','Palm of Judgment']), checks.palmstrike);
+      const palmstrike = get_base_challenge_name_by_strike('Palm-Strike');
+      if (palmstrike)
+        updateChallenge(db, palmstrike, checks.palmstrike);
     }
     if (checks.snapkick > 0) {
-      updateChallenge(db, JSON.stringify(['Basic Snapper','Whiplash Enthusiast','Blink-and-You-Missed-It','Oof ouch my chin']), checks.snapkick);
+      const snapkick = get_base_challenge_name_by_strike('Snap-Kick');
+      if (snapkick)
+        updateChallenge(db, snapkick, checks.snapkick);
     }
     if (checks.heelkick > 0) {
-      updateChallenge(db, JSON.stringify(['Heel Turn','Backstabber','Eyes-in-the-Back-Kicker','No Look. All Damage.']), checks.heelkick);
+      const heelkick = get_base_challenge_name_by_strike('Heel-Kick');
+      if (heelkick)
+        updateChallenge(db, heelkick, checks.heelkick);
     }
     if (checks.teep > 0) {
-      updateChallenge(db, JSON.stringify(['Sleeper Teeper','Season for Teepin','Personal Space Enjoyer','Teepzilla']),checks.teep);
+      const teep = get_base_challenge_name_by_strike('Teep');
+      if (teep)
+        updateChallenge(db, teep, checks.teep);
     }
     if (checks.elbow > 0) {
-      updateChallenge(db, JSON.stringify(['Elbow Rookie','Close-Range Negotiator','Sharp Conversations','Built Different (and Dangerous)']),checks.elbow);
+      const elbow = get_base_challenge_name_by_strike('Elbow');
+      if (elbow)
+        updateChallenge(db, elbow, checks.elbow);
     }
     if (checks.spinning > 0) {
       updateChallenge(db, 'Tatsumaki', checks.spinning);
     }
     if (checks.knee > 0) {
-      updateChallenge(db, JSON.stringify(['Beg-knee-ner','Clinch Goblin','Sir Knees-a-lot','Rib Breaker']), checks.knee);
+      const knee = get_base_challenge_name_by_strike('Knee');
+      if (knee)
+        updateChallenge(db, knee, checks.knee);
       // prevent duplicate updates by adding all strikes from challenge
       updateChallenge(db, 'Nut Buster', checks.knee + checks.doublepunch);
     }
     if (checks.doublepunch > 0) {
-      updateChallenge(db, JSON.stringify(['Two-Piece Starter',"Can't guard em both",'A PAIR of knuckle sandwiches','Kung Fu Panda']), checks.doublepunch);
+      const dbpunch = get_base_challenge_name_by_strike('Double-Punch');
+      if (dbpunch)
+        updateChallenge(db, dbpunch, checks.doublepunch);
       // if there are no knees, run the nut buster challenge check
       if (checks.knee == 0)
         updateChallenge(db, 'Nut Buster', checks.doublepunch);
     }
     if (checks.roundkick > 0) {
-      updateChallenge(db, JSON.stringify(['Roundhouse Recruit','Bruised Shin Haver','Honorary Thai','Femur Obliterator']), checks.roundkick);
+      const roundkick = get_base_challenge_name_by_strike('Round-Kick');
+      if (roundkick)
+        updateChallenge(db, roundkick, checks.roundkick);
       // prevent duplicate updates by adding all strikes from challenge
       updateChallenge(db, 'Legs of Steel', checks.roundkick + checks.check);
     }

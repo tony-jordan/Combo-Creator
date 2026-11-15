@@ -36,7 +36,7 @@ const WorkoutSummary = () => {
 
   const [progressMenu, setProgressMenu] = useState<boolean>(true)
   const [singeAnimation, setSingeAnimation] = useState<boolean>(true);
-  const [progressBarColor, setProgressBarColor] = useState<string>('yellow')
+  const [progressBarColor, setProgressBarColor] = useState<string>('purple')
 
   const [updated, setUpdated] = useState<boolean>(false);
 
