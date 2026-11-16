@@ -492,7 +492,7 @@ const stopStrikeAnimation = () => {
                         }
                         <View style={{width: '100%', alignItems: 'center'}}>
                           {item && item.tier != undefined && 
-                            <Text style={[styles.dateText, {fontSize: 8}]}>{Math.floor((item.value / item.thresholds[item.tier]) * 1000)/10}%</Text>
+                            <Text style={[styles.dateText, {fontSize: 8}]}>{item.achieved ? Math.floor((item.value / item.thresholds[item.thresholds.length - 1]) * 1000)/10 : Math.floor((item.value / item.thresholds[item.tier]) * 1000)/10}%</Text>
                           }
                           {item && item.tier == undefined && 
                             <Text style={[styles.dateText, {fontSize: 8}]}>{Math.floor((item.value / item.thresholds[0]) * 1000)/10 > 100 ? '100' : Math.floor((item.value / item.thresholds[0]) * 1000)/10}%</Text>

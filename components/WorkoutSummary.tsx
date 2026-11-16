@@ -120,6 +120,7 @@ const onSingeEnd = React.useCallback(() => {
 
 
   function updateAnimation(index: number) {
+    // multiplier is % how far the progression has been between current tier
     let multiplier =  (challengeValues[index].value - startMetrics[index].value) / challengeValues[index].threshold
     if (challengeValues[index].value / challengeValues[index].threshold > 1)
       multiplier = 0;
@@ -232,9 +233,9 @@ const onSingeEnd = React.useCallback(() => {
                           <Image style={{height: SCREEN_HEIGHT * .07, width: SCREEN_HEIGHT * .1, resizeMode: 'contain'}} source={item.tier != undefined ? item.tier == 0 ? require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == JSON.parse(item.name)[0])].items[item.tier - 1] || require('../assets/locked.png') : item.threshold > item.value ? require('../assets/locked.png') : medalImages[medalImages.findIndex(m => m.name == item.name)].items[0] || require('../assets/locked.png')}/>
                           <Text style={[styles.itemText, {textAlign: 'center', height: '30%'}]}>{item.tier != undefined ? item.tier == 0 ? '???' : JSON.parse(item.name)[item.tier - 1] : item.value < item.threshold ? '???' : item.name}</Text>
                           <Text style={[styles.headText, {fontSize: 18, padding: 1}]}>+{item.value - startMetrics[startMetrics.findIndex(val => val.name == item.name)].value}</Text>
-                          <Text style={[styles.headText, {fontSize: 12, padding: 1}]}>{Math.floor(1000 * (item.value / item.threshold))/10}%</Text>
+                          <Text style={[styles.headText, {fontSize: 12, padding: 1}]}>{item.prev ? Math.floor(1000 * ((item.value - item.prev) / (item.threshold - item.prev)))/10 : Math.floor(1000 * (item.value / item.threshold))/10}%</Text>
                           <View style={{width: SCREEN_WIDTH * .2, backgroundColor: 'white', height: SCREEN_HEIGHT * .01, borderWidth: 1, borderColor: 'black', flexDirection: 'row'}}>
-                            <View style={{backgroundColor: 'red', height: '100%', width: item.value >= item.threshold ? '100%' : (SCREEN_WIDTH * .2) * (startMetrics[startMetrics.findIndex(val => val.name == item.name)].value / item.threshold)}}/>
+                            <View style={{backgroundColor: 'red', height: '100%', width: item.value >= item.threshold ? '100%' : item.prev ? (SCREEN_WIDTH * .2) * ((startMetrics[startMetrics.findIndex(val => val.name == item.name)].value - item.prev) / (item.threshold - item.prev)) : (SCREEN_WIDTH * .2) * ((startMetrics[startMetrics.findIndex(val => val.name == item.name)].value) / item.threshold)}}/>
                             <Animated.View style={[progressAnimations[index].animation, {backgroundColor: progressBarColor, height: '100%', alignItems: 'flex-end'}]}>
                               <Image source={progressImage} style={{height: '100%', width: BAR_WIDTH * .02, resizeMode: 'stretch', opacity: singeAnimation ? 1 : 0}}/>
                             </Animated.View>

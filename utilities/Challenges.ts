@@ -5,7 +5,7 @@
 import type { SQLiteDatabase } from 'react-native-sqlite-storage';
 import { migration_challenges } from './ChallengeMigration';
 
-export type metrics = {name: string, value: number, tier: number, threshold: number};
+export type metrics = {name: string, value: number, tier: number, threshold: number, prev?: number};
 
 export const guidedWorkoutChallenges = [
   JSON.stringify(['Jab-Roookie', 'Apprentice Jabber', 'Intermediate Jabber', 'Professional Jabber', 'Master Jabber', 'God-Tier Jabber']),
@@ -34,7 +34,7 @@ export const guidedWorkoutChallenges = [
 
 // function for getting all values of given challenges for end of workout summary animations and such
 export const getChallengeValues = async (db: SQLiteDatabase, names: string[]) => {
-  let query = `SELECT name, value, tier, thresholds FROM Challenges WHERE name = (?)`
+  let query = `SELECT name, value, tier, achieved, thresholds FROM Challenges WHERE name = (?)`
   for (let x = 0; x < names.length; x++) {
     if (x > 0) {
       query += " OR name = (?)"
@@ -45,10 +45,19 @@ export const getChallengeValues = async (db: SQLiteDatabase, names: string[]) =>
   for (let x = 0; x < result.rows.length; x++) {
     const thresholds = JSON.parse(result.rows.item(x).thresholds)
     if (result.rows.item(x).tier)
-      values.push({name: result.rows.item(x).name, value: result.rows.item(x).value, tier: result.rows.item(x).tier, threshold: thresholds[result.rows.item(x).tier]});
+      if (x == 0)
+        values.push({name: result.rows.item(x).name, value: result.rows.item(x).value, tier: result.rows.item(x).tier, threshold: thresholds[result.rows.item(x).tier]});
+      else {
+        console.log(result.rows.item(x).name, result.rows.item(x).achieved)
+        if (result.rows.item(x).achieved == 1)
+          values.push({name: result.rows.item(x).name, value: result.rows.item(x).value, tier: result.rows.item(x).tier, threshold: thresholds[thresholds.length - 1]});
+        else
+          values.push({name: result.rows.item(x).name, value: result.rows.item(x).value, tier: result.rows.item(x).tier, threshold: thresholds[result.rows.item(x).tier], prev: thresholds[result.rows.item(x).tier - 1]})
+      }
     else
       values.push({name: result.rows.item(x).name, value: result.rows.item(x).value, tier: result.rows.item(x).tier, threshold: thresholds[0]});
   }
+  console.log(values);
   return values;
 }
 
@@ -78,7 +87,7 @@ export const updateChallenge = async (db: SQLiteDatabase, name: string, amount: 
     if (entry.tier != undefined) {
       if (entry.value + amount >= entry.thresholds[entry.tier]) {
         // if last tier has been passed, set achieved 
-        if (entry.tier == entry.thresholds.length - 1) {
+        if (entry.value >= entry.thresholds[entry.thresholds.length - 1]) {
           const q  = `UPDATE challenges SET achieved = (?), tier = (?), value = (?) WHERE name = (?)`;
           await db.executeSql(q, [1, entry.tier + 1, entry.value + amount, name]);
           return true;
