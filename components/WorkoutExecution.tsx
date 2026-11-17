@@ -10,7 +10,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import BuildWorkout from '../utilities/BuildWorkout';
 import { getDBConnection, addRecentWorkout } from '../utilities/DefaultInfo';
 import LinearGradient from 'react-native-linear-gradient';
-import { updateChallenge, setHighestStrikeCount, getChallengeValues, guidedWorkoutChallenges, metrics } from '../utilities/Challenges';
+import { updateChallenge, setHighestStrikeCount, getChallengeValues, guidedWorkoutChallenges, metrics, getChallenge } from '../utilities/Challenges';
 
 var combos: string[][];
 var favIndex: number[];
@@ -65,7 +65,9 @@ const WorkoutExecution = () => {
         await updateChallenge(db, "Insane Worker", parseInt(timeMinutes)/60 + parseInt(timeSeconds)/60/60);
         await updateChallenge(db, "Hyperbolic Time Chamber", parseInt(timeMinutes)/60 + parseInt(timeSeconds)/60/60);
         await setHighestStrikeCount(db);
-        await updateChallenge(db, "Unorthodox Combo Enjoyer", 1);
+        const dupeCheck = await getChallenge(db, "Unorthodox Combo Enjoyer");
+        if (dupeCheck[0].achieved == 0)
+          await updateChallenge(db, "Unorthodox Combo Enjoyer", 1);
       }
       fetchData();
       // if strike set id = -999 workout is by favorite rather than strike set

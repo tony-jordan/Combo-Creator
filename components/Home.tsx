@@ -15,7 +15,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { RootStackParamList } from '../utilities/StackNavigation';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { HomeDropdown } from '../utilities/HomeDropdown';
-import { setHighestStrikeCount, updateChallenge, medalImages } from '../utilities/Challenges';
+import { setHighestStrikeCount, updateChallenge, medalImages, doProgressMath } from '../utilities/Challenges';
 
 
 /* inputs for emulator and BYOD development */
@@ -87,6 +87,7 @@ const Home = () => {
   // medal auto scroll animation
 
   const medalImgs = [require('../assets/medals/locked.png'),require('../assets/medals/bronze.png'), require('../assets/medals/silver.png'), require('../assets/medals/gold.png'), require('../assets/medals/master.png')]
+  const shimmer = require('../assets/medals/shimmer.webp');
 
   const medalScrollRef = useRef<ScrollView>(null);
   const isUserScrolling = useRef(false);
@@ -366,7 +367,8 @@ const stopStrikeAnimation = () => {
         if (streakValue == 7) {
           await db.executeSql(`UPDATE challenges SET value = (?), tier = (?), achieved = (?) WHERE name = (?)`, [streakValue, streakValue, 1, JSON.stringify(['Your Single Step','A Double','A Turkey','A Quad','The Big V','Wind down a bit huh?','You should probably get some rest'])]);
         }
-        else {
+        // DO NOT update if streak value is < what the player has already achieved (don't take away their medal)
+        else if (checks.rows.item(0).value < streakValue) {
           if (checks.rows.item(0).value < streakValue) {
             await db.executeSql(`UPDATE challenges SET value = (?), tier = (?) WHERE name = (?)`, [streakValue, streakValue, JSON.stringify(['Your Single Step','A Double','A Turkey','A Quad','The Big V','Wind down a bit huh?','You should probably get some rest'])]);
           }
@@ -482,23 +484,20 @@ const stopStrikeAnimation = () => {
                         <View>
                           <View style={{position: 'absolute', width: 60, height: 7, borderRadius: 200, backgroundColor: '#474747', alignSelf: 'center', top: 50}}/>
                           <Image source={item.tier == 0 ? medalImgs[0] : medalImages.find(m => m.name === (JSON.parse(item.name)[0]))?.items[item.tier - 1]} style={{resizeMode: 'contain', width: 55, height: 55}} />
+                          {item.tier > 0 && <Image style={{position: 'absolute', width: 55, height: 55}} source={shimmer}></Image>}
                         </View>
                         }
                         {item.tier == undefined && 
                           <View>
                             <View style={{position: 'absolute', width: 60, height: 7, borderRadius: 200, backgroundColor: '#474747', alignSelf: 'center', top: 50}}/>
                             <Image source={item.achieved == 1 ? medalImages.find(m => m.name === item.name)?.items[0] ? medalImages.find(m => m.name === item.name)?.items[0] : medalImgs[4] : medalImgs[0]} style={{resizeMode: 'contain', width: 55, height: 55}}/>
+                              {item.achieved > 0 && <Image style={{position: 'absolute', width: 55, height: 55}} source={shimmer}></Image>}
                           </View>
                         }
                         <View style={{width: '100%', alignItems: 'center'}}>
-                          {item && item.tier != undefined && 
-                            <Text style={[styles.dateText, {fontSize: 8}]}>{item.achieved ? Math.floor((item.value / item.thresholds[item.thresholds.length - 1]) * 1000)/10 : Math.floor((item.value / item.thresholds[item.tier]) * 1000)/10}%</Text>
-                          }
-                          {item && item.tier == undefined && 
-                            <Text style={[styles.dateText, {fontSize: 8}]}>{Math.floor((item.value / item.thresholds[0]) * 1000)/10 > 100 ? '100' : Math.floor((item.value / item.thresholds[0]) * 1000)/10}%</Text>
-                          }
+                            <Text style={[styles.dateText, {fontSize: 8}]}>{doProgressMath(item)}%</Text>
                           <View style={{width: '95%', height: 5, backgroundColor: 'gray'}}>
-                            <View style={{position: 'absolute', width: item.achieved ? '100%' : item.tier != undefined ? `${Math.floor((item.value / item.thresholds[item.tier]) * 100)}%` :  `${Math.floor((item.value / item.thresholds[0]) * 100)}%`, height: 5, backgroundColor: 'white'}}/>
+                            <View style={{position: 'absolute', width: item.achieved ? '100%' :`${doProgressMath(item)}%`, height: 5, backgroundColor: 'white'}}/>
                           </View>
                         </View>
                       </View>

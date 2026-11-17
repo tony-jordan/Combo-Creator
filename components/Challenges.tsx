@@ -17,7 +17,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import { useEffect, useState } from 'react';
 import { getChallenges, getDBConnection } from '../utilities/DefaultInfo';
-import { medalImages } from '../utilities/Challenges';
+import { doProgressMath, medalImages } from '../utilities/Challenges';
 
 
 const Challenges = () => {
@@ -76,9 +76,18 @@ const locked = require('../assets/medals/locked.png');
                         <View style={{alignItems: 'center'}}>
                             <Text style={{color: 'white'}}>Progress</Text>
                             <View style={{height: item.thresholds.length == 1 ? 50 : 50 * (item.thresholds.length - 1), width: 10, borderWidth: 1, borderColor: 'gray'}}>
-                                <View style={{height: item.achieved == 1 ? item.thresholds.length == 1 ? 50 : 50 * (item.thresholds.length - 1) : item.thresholds.length == 1 ? 50 * (item.value / item.thresholds[item.tier != undefined ? item.tier : 0]) : 50 * (item.thresholds.length - 1) * (item.value / item.thresholds[item.tier != undefined ? item.tier : 0]), width: 10, borderWidth: 1, backgroundColor: 'red'}}/>
+                                <View style={{height: item.achieved == 1 ? 50 : 50 * (item.thresholds.length - 1) * (doProgressMath(item) / 100) , width: 10, borderWidth: 1, backgroundColor: 'red'}}/>
                             </View>
-                            <Text style={{color: 'white'}}>{item.achieved ? '100' : Math.floor((item.value / item.thresholds[item.tier != undefined ? item.tier : 0] * 1000))/10}%</Text>
+                              {item.achieved == 0 && 
+                                <Text style={{color: 'white'}}>{doProgressMath(item)}%</Text>
+                              }
+                              {item.achieved == 1 && 
+                                <Text style={{color: 'white'}}>100%</Text>
+                              }
+                              <View style={{alignItems: 'center'}}>
+                                <Text style={{color: 'white'}}>Total: </Text>
+                                <Text style={{color: 'white'}}>{Math.floor(item.value * 100)/100}</Text>
+                              </View>
                         </View>
                     </View>
                 </View>

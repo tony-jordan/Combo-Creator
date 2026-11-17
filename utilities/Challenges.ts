@@ -32,9 +32,15 @@ export const guidedWorkoutChallenges = [
   'I fear the man who has practiced one strike 1000 times'
 ]
 
+export const getChallenge = async (db: SQLiteDatabase, name: string) => {
+  let query = `SELECT name, value, tier, achieved, thresholds FROM Challenges WHERE name = (?)`
+  const [result] = await db.executeSql(query, [name])
+  return result.rows.item(0);
+}
+
 // function for getting all values of given challenges for end of workout summary animations and such
 export const getChallengeValues = async (db: SQLiteDatabase, names: string[]) => {
-  let query = `SELECT name, value, tier, achieved, thresholds FROM Challenges WHERE name = (?)`
+  let query = `SELECT name, value, tier, thresholds FROM Challenges WHERE name = (?)`
   for (let x = 0; x < names.length; x++) {
     if (x > 0) {
       query += " OR name = (?)"
@@ -59,6 +65,17 @@ export const getChallengeValues = async (db: SQLiteDatabase, names: string[]) =>
   }
   console.log(values);
   return values;
+}
+
+// function for getting progress towards next tier
+export function doProgressMath(item: any): number {
+  if (item.tier != undefined && item.tier > 0) {
+    return Math.floor(((item.value - item.thresholds[item.tier - 1]) / (item.thresholds[item.tier] - item.thresholds[item.tier - 1]) * 1000))/10;
+  }
+  else if ((item.tier != undefined && item.tier == 0) || !item.tier) {
+    return Math.floor((item.value / (item.thresholds[0]) * 1000))/10;
+  }
+  return 0;
 }
 
 // function for getting highest strike count for challenge updating
